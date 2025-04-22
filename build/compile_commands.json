@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/mufeng/c++/Search_Engines/build",
+  "command": "/usr/bin/c++   -g -std=gnu++11 -o CMakeFiles/parser.dir/parser.cpp.o -c /home/mufeng/c++/Search_Engines/code/parser.cpp",
+  "file": "/home/mufeng/c++/Search_Engines/code/parser.cpp"
+},
+{
+  "directory": "/home/mufeng/c++/Search_Engines/build",
+  "command": "/usr/bin/c++   -g -std=gnu++11 -o CMakeFiles/server.dir/server.cpp.o -c /home/mufeng/c++/Search_Engines/code/server.cpp",
+  "file": "/home/mufeng/c++/Search_Engines/code/server.cpp"
+}
+]

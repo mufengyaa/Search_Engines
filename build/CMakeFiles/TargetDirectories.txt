@@ -1,0 +1,4 @@
+/home/mufeng/c++/Search_Engines/build/CMakeFiles/parser.dir
+/home/mufeng/c++/Search_Engines/build/CMakeFiles/server.dir
+/home/mufeng/c++/Search_Engines/build/CMakeFiles/edit_cache.dir
+/home/mufeng/c++/Search_Engines/build/CMakeFiles/rebuild_cache.dir
