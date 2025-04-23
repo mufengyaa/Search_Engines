@@ -1,8 +1,9 @@
 #include "/home/mufeng/cpp-httplib/httplib.h"
 #include <pthread.h>
 
-#include "searcher.hpp"
+#include "search/search_engine.hpp"
 #include "mysql.hpp"
+#include "search/suggest.hpp"
 
 #define root_path "../wwwroot"
 
@@ -145,21 +146,29 @@ int main()
     // 搜索
     svr.Get("/s", [&s](const httplib::Request &req, httplib::Response &rsp)
             {
-                if (!req.has_param("word"))
-                {
-                    rsp.set_content("必须要有搜索关键字", "text/plain; charset=utf-8");
-                    return;
-                }
+        if (!req.has_param("word"))
+        {
+            rsp.set_content("必须要有搜索关键字", "text/plain; charset=utf-8");
+            return;
+        }
 
-                std::string word = req.get_param_value("word");
-                std::string session_id = req.get_param_value("session_id"); // 获取会话 ID
+        std::string word = req.get_param_value("word");
+        std::string session_id = req.get_param_value("session_id"); // 获取会话 ID
 
-                std::cout << "用户在搜索：" << word << std::endl;
-                search(session_id, word, s, rsp); // 调用搜索函数
-            });
+        std::cout << "用户在搜索：" << word << std::endl;
 
-    std::cout << "Starting server on port 8080..." << std::endl;
-    svr.listen("0.0.0.0", 8080);
-    std::cout << "Server is listening..." << std::endl;
-    return 0;
+        // 判断请求是联想 / 正式搜索
+        if (req.has_param("search") && req.get_param_value("search") == "true")
+        {
+            search(session_id, word, s, rsp); // 带有search字段的才是正式搜索
+        }
+        else
+        {
+            suggest(word, s, rsp); // 联想建议
+        }
+
+        std::cout << "Starting server on port 8080..." << std::endl;
+        svr.listen("0.0.0.0", 8080);
+        std::cout << "Server is listening..." << std::endl;
+        return 0;
 }

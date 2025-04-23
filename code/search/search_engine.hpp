@@ -1,6 +1,11 @@
 #include <algorithm>
-#include <jsoncpp/json/json.h>
+#include <unordered_map>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <mutex>
 
+#include <jsoncpp/json/json.h>
 #include "mysql.hpp"
 #include "assistance.hpp"
 #include "index.hpp"
@@ -15,6 +20,7 @@ public:
         index_ = Index::get_instance();
     }
     ~Searcher() {}
+
     void search(const std::string &data, std::string *json)
     {
 
@@ -93,7 +99,7 @@ public:
             {
                 title += "[广告]"; // 这里加的空格会被json忽略
             }
-            // title += ",weight=" + std::to_string(it.weight_);
+            // title += ",weight=" + std::to_string(it.weight_);  //Debug
             item["title"] = std::move(title);
             item["desc"] = get_desc(doc.content_, it.words_[0]);
             item["url"] = doc.url_;
