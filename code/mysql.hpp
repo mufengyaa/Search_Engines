@@ -12,30 +12,35 @@
 class my_mysql
 {
 protected:
-    MYSQL *mysql_;
+    static MYSQL *mysql_; // 保持全局唯一的数据库连接
+    static std::mutex connect_mutex;
 
 public:
     my_mysql()
     {
         connect();
     }
-    virtual ~my_mysql()
-    {
-        if (mysql_)
-            mysql_close(mysql_);
-    }
+
+    virtual ~my_mysql() {}
 
 protected:
-    void connect()
+    static void connect()
     {
-        mysql_ = mysql_init(nullptr);
-        mysql_ = mysql_real_connect(mysql_, "101.126.142.54", "mufeng", "599348181", "conn", 3306, nullptr, 0);
         if (mysql_ == nullptr)
         {
-            std::cerr << "connect failed\n";
-            exit(1);
+            std::lock_guard<std::mutex> lock(connect_mutex); // 自动加锁，保证同一时刻只有一个线程初始化连接
+            if (mysql_ == nullptr)
+            {
+                mysql_ = mysql_init(nullptr);
+                mysql_ = mysql_real_connect(mysql_, "101.126.142.54", "mufeng", "599348181", "conn", 3306, nullptr, 0);
+                if (mysql_ == nullptr)
+                {
+                    std::cerr << "connect failed\n";
+                    exit(1);
+                }
+                mysql_set_character_set(mysql_, "utf8");
+            }
         }
-        mysql_set_character_set(mysql_, "utf8");
     }
 };
 
