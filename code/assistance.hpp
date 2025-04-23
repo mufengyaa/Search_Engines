@@ -12,7 +12,6 @@
 #include "Log.hpp"
 
 #define source_file_path "/home/mufeng/boost_1_86_0/"
-#define target_path "../data/data.txt"
 #define delimiter '\3'
 
 namespace ns_helper
@@ -24,7 +23,7 @@ namespace ns_helper
         std::string url_;
     };
 
-    void read_file(const std::string &path, std::string& data)
+    void read_file(const std::string &path, std::string &data)
     {
         std::ifstream in(path, std::ios_base::in);
         if (!in.is_open())

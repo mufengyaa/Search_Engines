@@ -32,9 +32,8 @@ public:
         std::unordered_map<doc_id_t, words_info> Non_duplicate_map;
 
         // 引入广告功能
-        advertising_table ad;
         std::unordered_map<std::string, float> ads;
-        ad.read_advertising_information(ads);
+        advertising_table::instance().read_advertising_information(ads);
 
         // 得到不重复的文档集合
         for (auto word : words)

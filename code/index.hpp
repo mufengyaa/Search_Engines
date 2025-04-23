@@ -37,7 +37,7 @@ class Index
 
     Index()
     {
-        init(target_path);
+        init();
     }
     Index(const Index &) = delete;
     Index &operator=(const Index &) = delete;
@@ -57,9 +57,9 @@ public:
         }
         return instance_;
     }
-    void init(const std::string &path)
+    void init()
     {
-        create_positive_index(path);
+        create_positive_index();
         lg(INFO, "create positive_index success");
         for (const auto &it : pos_index_)
         {
@@ -92,14 +92,8 @@ public:
     }
 
 private:
-    void create_positive_index(const std::string &path) // 以文档为单位
+    void create_positive_index() // 以文档为单位
     {
-        std::ifstream in(path, std::ios_base::in | std::ios_base::binary);
-        if (!in.is_open())
-        {
-            lg(ERROR, "file: %s open failed", path.c_str());
-            return;
-        }
 
         std::string doc;
         while (std::getline(in, doc))

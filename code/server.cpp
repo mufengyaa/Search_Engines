@@ -17,10 +17,10 @@ enum user_status
 std::unordered_map<std::string, std::string> sessions; // session_id -> username
 
 // 登录函数
-int login(user_table &u_tb, std::unordered_map<std::string, std::string> &users, const std::string &name, const std::string &password, std::string &session_id)
+int login(std::unordered_map<std::string, std::string> &users, const std::string &name, const std::string &password, std::string &session_id)
 {
     // 先更新下用户表
-    u_tb.read_user_information(users);
+    user_table::instance().read_user_information(users);
     // 比对账号密码
     if (users.count(name))
     {
@@ -37,7 +37,7 @@ int login(user_table &u_tb, std::unordered_map<std::string, std::string> &users,
 }
 
 // 注册函数
-int register_user(user_table &u_tb, std::unordered_map<std::string, std::string> &users, const std::string &name, const std::string &password)
+int register_user(std::unordered_map<std::string, std::string> &users, const std::string &name, const std::string &password)
 {
     // 判断用户表中是否有这个账号
     if (users.find(name) != users.end())
@@ -45,7 +45,7 @@ int register_user(user_table &u_tb, std::unordered_map<std::string, std::string>
         return user_status::EXIST;
     }
     // 添加到数据库中
-    if (!u_tb.write_user_information(name, password))
+    if (!user_table::instance().write_user_information(name, password))
     {
         return user_status::FAILED;
     }

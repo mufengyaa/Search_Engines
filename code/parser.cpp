@@ -5,10 +5,11 @@
 #include <regex>
 
 #include "assistance.hpp"
+#include "mysql.hpp"
 
 namespace fs = boost::filesystem;
 
-//static int count = 1;
+// static int count = 1;
 
 class Parser
 {
@@ -17,15 +18,8 @@ class Parser
 public:
     Parser() {}
     ~Parser() {}
-    bool parser(const std::string &path, const std::string &output_path)
+    bool parser(const std::string &path)
     {
-        std::ofstream out(output_path, std::ios_base::out | std::ios_base::binary);
-        if (!out.is_open())
-        {
-            lg(ERROR, "file: %s open failed", path.c_str());
-            return false;
-        }
-
         fs::path directory(path);
         if (fs::exists(directory) && fs::is_directory(directory))
         {
@@ -38,15 +32,15 @@ public:
                     std::string data;
                     ns_helper::read_file(file->path().string(), data);
                     ns_helper::doc_info document;
-                    // 边解析边写入文件
+
+                    // 写入数据库
                     if (analysis(data, document, file->path().string()))
                     {
-                        out.write(document.title_.c_str(), document.title_.size());
-                        out << delimiter;
-                        out.write(document.content_.c_str(), document.content_.size());
-                        out << delimiter;
-                        out.write(document.url_.c_str(), document.url_.size());
-                        out << '\n';
+                        bool ret = source_table::instance().write_source_information(document.title_, document.content_, document.url_);
+                        if (!ret)
+                        {
+                            lg(ERROR, "file: %s write db failed", path.c_str());
+                        }
                     }
                 }
             }
@@ -55,8 +49,6 @@ public:
         {
             return false;
         }
-
-        out.close();
         lg(DEBUG, "write success");
 
         return true;
@@ -96,55 +88,14 @@ private:
         // 去掉内容开头和结尾的多余空白
         result.content_ = std::regex_replace(result.content_, std::regex("^\\s+|\\s+$"), "");
 
-        //std::cout << "已完成文档" << count++ << std::endl;
-
         return true;
-
-        // // 提取content,也就是去掉标签
-        // enum state
-        // {
-        //     LABLE,
-        //     CONTENT
-        // };
-        // enum state s = LABLE;
-        // for (char c : data)
-        // {
-        //     switch (s)
-        //     {
-        //     case LABLE:
-        //         if (c == '>')
-        //         {
-        //             s = CONTENT;
-        //         }
-        //         break;
-        //     case CONTENT:
-        //         if (c == '<')
-        //         {
-        //             s = LABLE;
-        //         }
-        //         else
-        //         {
-        //             // 我们不想保留原始文件中的\n,因为我们想用\n作为html解析之后文本的分隔符
-        //             if (c == '\n')
-        //             {
-        //                 c = ' ';
-        //             }
-        //             (result.content_).push_back(c);
-        //         }
-        //         break;
-        //     default:
-        //         break;
-        //     }
-        // }
-        // std::cout << "content:";
-        // std::cout << result.content_ << std::endl;
     }
 };
 
 void work()
 {
     Parser p;
-    if (!p.parser(source_file_path, target_path))
+    if (!p.parser(source_file_path))
     {
         lg(ERROR, "parser falied");
     }

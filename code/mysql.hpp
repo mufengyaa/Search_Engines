@@ -3,11 +3,12 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <vector>
+#include <tuple>
 #include <mysql/mysql.h>
 
 #include "assistance.hpp"
 
-// 提供插入/读取广告信息的功能
 class my_mysql
 {
 protected:
@@ -18,114 +19,171 @@ public:
     {
         connect();
     }
-    ~my_mysql()
+    virtual ~my_mysql()
     {
-        mysql_close(mysql_);
+        if (mysql_)
+            mysql_close(mysql_);
     }
 
-private:
+protected:
     void connect()
     {
         mysql_ = mysql_init(nullptr);
         mysql_ = mysql_real_connect(mysql_, "101.126.142.54", "mufeng", "599348181", "conn", 3306, nullptr, 0);
-        if (nullptr == mysql_)
+        if (mysql_ == nullptr)
         {
-            std::cout << "connect failed\n";
+            std::cerr << "connect failed\n";
             exit(1);
         }
         mysql_set_character_set(mysql_, "utf8");
     }
 };
 
+// ---------- advertising_table 单例 ----------
 class advertising_table : public my_mysql
 {
 public:
+    static advertising_table &instance()
+    {
+        // C++11 保证了函数内部静态变量初始化的线程安全，无需加锁
+        // static 局部变量只初始化一次,只有初次调用才会创建对象,后续返回的都是同一个
+        static advertising_table instance_;
+        return instance_;
+    }
+
     void read_advertising_information(std::unordered_map<std::string, float> &data)
     {
-        std::string sql;
-        sql = "select url,fee from ad";
-        int ret = mysql_query(mysql_, sql.c_str());
-        if (ret == 0)
+        std::string sql = "select url,fee from ad";
+        if (mysql_query(mysql_, sql.c_str()) == 0)
         {
             MYSQL_RES *res = mysql_store_result(mysql_);
-            if (res == nullptr)
+            if (res)
             {
-                std::cout << "mysql_store_result failed\n";
-            }
-            else
-            {
-                int row_num = mysql_num_rows(res);
-                int field_num = mysql_num_fields(res);
-                // // 打印列名
-                // MYSQL_FIELD *field;
-                // while ((field = mysql_fetch_field(res)) != NULL)
-                // {
-                //     std::cout << field->name << " ";
-                // }
-                // std::cout << std::endl;
-
-                // 拿出表数据
-                for (int i = 0; i < row_num; ++i)
+                MYSQL_ROW row;
+                while ((row = mysql_fetch_row(res)))
                 {
-                    MYSQL_ROW row = mysql_fetch_row(res);
-                    // 转换广告费类型
                     std::string fee = row[1];
                     data[row[0]] = std::stof(fee);
                 }
+                mysql_free_result(res);
             }
+            else
+                std::cerr << "mysql_store_result failed\n";
         }
         else
-        {
-            std::cout << mysql_error(mysql_) << std::endl;
-        }
+            std::cerr << mysql_error(mysql_) << std::endl;
     }
+
+private:
+    advertising_table() = default;
+    ~advertising_table() = default;
+    advertising_table(const advertising_table &) = delete;
+    advertising_table &operator=(const advertising_table &) = delete;
 };
 
+// ---------- user_table 单例 ----------
 class user_table : public my_mysql
 {
 public:
+    static user_table &instance()
+    {
+        static user_table instance_;
+        return instance_;
+    }
+
     bool write_user_information(const std::string &name, const std::string &password)
     {
         std::string sql = "insert into user(name,password) values('" + name + "','" + password + "')";
-        int ret = mysql_query(mysql_, sql.c_str());
-        if (ret == 0)
-        {
+        if (mysql_query(mysql_, sql.c_str()) == 0)
             return true;
-        }
-        else
-        {
-            lg(ERROR, "%s", mysql_error(mysql_));
-            return false;
-        }
+        lg(ERROR, "%s", mysql_error(mysql_));
+        return false;
     }
-    void read_user_information(std::unordered_map<std::string, std::string>& users)
+
+    void read_user_information(std::unordered_map<std::string, std::string> &users)
     {
-        std::string sql;
-        sql = "select name,password from user";
-        int ret = mysql_query(mysql_, sql.c_str());
-        if (ret == 0)
+        std::string sql = "select name,password from user";
+        if (mysql_query(mysql_, sql.c_str()) == 0)
         {
             MYSQL_RES *res = mysql_store_result(mysql_);
-            if (res == nullptr)
+            if (res)
             {
-                std::cout << "mysql_store_result failed\n";
+                MYSQL_ROW row;
+                while ((row = mysql_fetch_row(res)))
+                    users[row[0]] = row[1];
+                mysql_free_result(res);
             }
             else
-            {
-                int row_num = mysql_num_rows(res);
-                int field_num = mysql_num_fields(res);
-
-                // 拿出表数据
-                for (int i = 0; i < row_num; ++i)
-                {
-                    MYSQL_ROW row = mysql_fetch_row(res);
-                    users[row[0]] = row[1];
-                }
-            }
+                std::cerr << "mysql_store_result failed\n";
         }
         else
+            std::cerr << mysql_error(mysql_) << std::endl;
+    }
+
+private:
+    user_table() = default;
+    ~user_table() = default;
+    user_table(const user_table &) = delete;
+    user_table &operator=(const user_table &) = delete;
+};
+
+// ---------- source_table 单例 ----------
+class source_table : public my_mysql
+{
+public:
+    static source_table &instance()
+    {
+        static source_table instance_;
+        return instance_;
+    }
+
+    bool write_source_information(const std::string &title, const std::string &content, const std::string &url)
+    {
+        std::string sql = "INSERT INTO source(title, content, url) VALUES('" +
+                          escape_string(title) + "','" + escape_string(content) + "','" + escape_string(url) + "')";
+        if (mysql_query(mysql_, sql.c_str()) == 0)
+            return true;
+        lg(ERROR, "%s", mysql_error(mysql_));
+        return false;
+    }
+
+    void read_source_information(std::vector<std::tuple<std::string, std::string, std::string>> &sources)
+    {
+        std::string sql = "SELECT title, content, url FROM source";
+        if (mysql_query(mysql_, sql.c_str()) == 0)
         {
-            std::cout << mysql_error(mysql_) << std::endl;
+            MYSQL_RES *res = mysql_store_result(mysql_);
+            if (res)
+            {
+                MYSQL_ROW row;
+                while ((row = mysql_fetch_row(res)))
+                {
+                    sources.emplace_back(
+                        row[0] ? row[0] : "",
+                        row[1] ? row[1] : "",
+                        row[2] ? row[2] : "");
+                }
+                mysql_free_result(res);
+            }
+            else
+                std::cerr << "mysql_store_result failed\n";
         }
+        else
+            std::cerr << mysql_error(mysql_) << std::endl;
+    }
+
+private:
+    source_table() = default;
+    ~source_table() = default;
+    source_table(const source_table &) = delete;
+    source_table &operator=(const source_table &) = delete;
+
+    std::string escape_string(const std::string &input)
+    {
+        char *buffer = new char[input.size() * 2 + 1];
+        mysql_real_escape_string(mysql_, buffer, input.c_str(), input.size());
+        std::string result(buffer);
+        delete[] buffer;
+        return result;
     }
 };
