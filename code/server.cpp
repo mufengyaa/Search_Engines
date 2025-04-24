@@ -8,10 +8,12 @@
 
 #define root_path "../wwwroot"
 
+// 101.126.142.54:8080
+
 // 搜索功能
 void search(const std::string &session_id, const std::string &word, Searcher &s, httplib::Response &rsp)
 {
-    if (sessions.count(session_id) == 0)
+    if (auth_manager::instance().validate_session(session_id))
     {
         rsp.status = 401; // 未登录
         rsp.set_content("未登录，请先登录。", "text/plain; charset=utf-8");
@@ -33,9 +35,8 @@ int main()
     svr.set_base_dir(root_path);
 
     // 读取用户表
-    user_table user_tb;
     std::unordered_map<std::string, std::string> users;
-    user_tb.read_user_information(users);
+    user_table::instance().read_user_information(users);
 
     // // 用户注册
     // svr.Post("/register", [&user_tb, &users](const httplib::Request &req, httplib::Response &rsp)
@@ -114,7 +115,7 @@ int main()
             std::string username = json_body["username"].asString();
             std::string password = json_body["password"].asString();
     
-            int ret = auth_manager.register_user(username, password);
+            int ret = auth_manager::instance().register_user(username, password);
             if (ret == user_status::EXIST) {
                 rsp.set_content("账号已存在", "text/plain; charset=utf-8");
             } else if (ret == user_status::FAILED) {
@@ -141,7 +142,7 @@ int main()
             std::string password = json_body["password"].asString();
             std::string session_id;
     
-            int ret = auth_manager.login(username, password, session_id);
+            int ret = auth_manager::instance().login(username, password, session_id);
             if (ret == user_status::SUCCESS) {
                 rsp.set_content("登录成功, 会话ID: " + session_id, "text/plain; charset=utf-8");
             } else if (ret == user_status::WRONG) {
@@ -172,11 +173,11 @@ int main()
         }
         else
         {
-            suggest(word, s, rsp); // 联想建议
-        }
+            suggest(word, rsp); // 联想建议
+        } });
 
-        std::cout << "Starting server on port 8080..." << std::endl;
-        svr.listen("0.0.0.0", 8080);
-        std::cout << "Server is listening..." << std::endl;
-        return 0;
+    std::cout << "Starting server on port 8080..." << std::endl;
+    svr.listen("0.0.0.0", 8080);
+    std::cout << "Server is listening..." << std::endl;
+    return 0;
 }

@@ -4,9 +4,9 @@
 #include "trie.hpp"
 #include "/home/mufeng/cpp-httplib/httplib.h"
 
-void suggest(const std::string &word, const Trie &trie, httplib::Response &rsp)
+void suggest(const std::string &word, httplib::Response &rsp)
 {
-    auto results = trie.starts_with(word);
+    auto results = Trie::instance().starts_with(word);
 
     std::ostringstream oss;
     oss << R"([)"; // 这里直接开始一个数组

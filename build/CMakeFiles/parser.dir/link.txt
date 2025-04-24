@@ -1,1 +1,1 @@
-/usr/bin/c++ -g CMakeFiles/parser.dir/parser.cpp.o -o parser  -lboost_system -lboost_filesystem 
+/usr/bin/c++ CMakeFiles/parser.dir/code/parser.cpp.o -o parser  -lboost_system -lboost_filesystem -lmysqlclient -lpthread 

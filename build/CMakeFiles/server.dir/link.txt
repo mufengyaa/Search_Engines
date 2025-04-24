@@ -1,1 +1,1 @@
-/usr/bin/c++ -g CMakeFiles/server.dir/server.cpp.o -o server  -lboost_system -lboost_filesystem -ljsoncpp -lpthread -lmysqlclient 
+/usr/bin/c++ CMakeFiles/server.dir/code/server.cpp.o -o server  -lboost_system -lboost_filesystem -ljsoncpp -lmysqlclient -lpthread /usr/lib/x86_64-linux-gnu/libcrypto.so 

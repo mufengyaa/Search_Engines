@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/mufeng/c++/Search_Engines/code/parser.cpp" "CMakeFiles/parser.dir/parser.cpp.o" "gcc" "CMakeFiles/parser.dir/parser.cpp.o.d"
+  "/home/mufeng/Search_Engines/code/parser.cpp" "CMakeFiles/parser.dir/code/parser.cpp.o" "gcc" "CMakeFiles/parser.dir/code/parser.cpp.o.d"
   )
 
 # Targets to which this target links.

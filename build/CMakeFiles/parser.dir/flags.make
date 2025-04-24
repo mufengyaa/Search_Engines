@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = 
+CXX_INCLUDES = -I/home/mufeng/Search_Engines/code
 
-CXX_FLAGS = -g -std=gnu++11
+CXX_FLAGS = -std=gnu++17
 

@@ -16,14 +16,14 @@ enum user_status
     FAILED
 };
 
-class AuthManager
+class auth_manager
 {
 public:
-    AuthManager()
+    static auth_manager &instance()
     {
-        load_user_data();
+        static auth_manager instance_;
+        return instance_;
     }
-    ~AuthManager() {}
 
     int login(const std::string &username, const std::string &password, std::string &session_id)
     {
@@ -76,6 +76,14 @@ public:
     }
 
 private:
+    auth_manager()
+    {
+        load_user_data();
+    }
+    ~auth_manager() = default;
+    auth_manager(const auth_manager &) = delete;
+    auth_manager &operator=(const auth_manager &) = delete;
+
     std::string generate_salt()
     {
         // 随机数生成器

@@ -13,6 +13,7 @@
 
 #define source_file_path "/home/mufeng/boost_1_86_0/"
 #define delimiter '\3'
+#define doc_id_t long
 
 namespace ns_helper
 {
@@ -21,6 +22,18 @@ namespace ns_helper
         std::string title_;
         std::string content_;
         std::string url_;
+    };
+    class docInfo_index : public ns_helper::doc_info
+    {
+    public:
+        doc_id_t doc_id_;
+        docInfo_index() {}
+        docInfo_index(const ns_helper::doc_info &doc)
+        {
+            title_ = doc.title_;
+            content_ = doc.content_;
+            url_ = doc.url_;
+        }
     };
 
     void read_file(const std::string &path, std::string &data)

@@ -7,17 +7,12 @@
 #include <boost/algorithm/string.hpp>
 
 #include "assistance.hpp"
-
-#define doc_id_t long
+#include "mysql.hpp"
 
 static int count = 0;
 
 namespace fs = boost::filesystem;
 
-struct docInfo_index : public ns_helper::doc_info
-{
-    doc_id_t doc_id_;
-};
 struct word_info
 {
     std::string word_;
@@ -29,7 +24,7 @@ using inverted_zipper = std::vector<word_info>;
 
 class Index
 {
-    std::vector<docInfo_index> pos_index_;                       // 正排索引
+    std::vector<ns_helper::docInfo_index> pos_index_;            // 正排索引
     std::unordered_map<std::string, inverted_zipper> inv_index_; // 倒排索引
 
     static Index *instance_;
@@ -68,7 +63,7 @@ public:
         }
         lg(INFO, "create inverted_index success");
     }
-    bool search_positive_index(const doc_id_t id, docInfo_index &doc)
+    bool search_positive_index(const doc_id_t id, ns_helper::docInfo_index &doc)
     {
         if (id >= pos_index_.size())
         {
@@ -92,25 +87,20 @@ public:
     }
 
 private:
-    void create_positive_index() // 以文档为单位
+    void create_positive_index()
     {
-
-        std::string doc;
-        while (std::getline(in, doc))
+        std::vector<ns_helper::doc_info> sources;
+        source_table::instance().read_source_information(sources);
+        for (auto &doc : sources)
         {
             // 拿到一个文档,进行解析
-            docInfo_index di;
-            if (!analysis(doc, delimiter, &di))
-            {
-                lg(ERROR, "analysis faild");
-                continue;
-            }
+            ns_helper::docInfo_index di(std::move(doc));
             di.doc_id_ = pos_index_.size();
             // 解析完成后,插入到索引中
             pos_index_.push_back(std::move(di));
         }
     }
-    void create_inverted_index(const docInfo_index &doc) // 以文档为单位
+    void create_inverted_index(const ns_helper::docInfo_index &doc) // 以文档为单位
     {
         struct word_cnt
         {
@@ -152,21 +142,6 @@ private:
             t.weight_ = (it.second).title_cnt_ * title_count + (it.second).content_cnt_ * content_count;
             inv_index_[t.word_].push_back(t); // 插入的是小写单词
         }
-    }
-
-    bool analysis(const std::string doc, char sep, docInfo_index *doc_info)
-    {
-        std::vector<std::string> result;
-        boost::split(result, doc, [sep](char c)
-                     { return c == sep; }, boost::token_compress_on);
-        if (result.size() != 3)
-        {
-            return false;
-        }
-        doc_info->title_ = result[0];
-        doc_info->content_ = result[1];
-        doc_info->url_ = result[2];
-        return true;
     }
 };
 Index *Index::instance_ = nullptr;

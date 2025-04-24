@@ -43,6 +43,8 @@ protected:
         }
     }
 };
+MYSQL *my_mysql::mysql_ = nullptr;
+std::mutex my_mysql::connect_mutex;
 
 // ---------- advertising_table 单例 ----------
 class advertising_table : public my_mysql
@@ -144,7 +146,7 @@ public:
 
     bool write_source_information(const std::string &title, const std::string &content, const std::string &url)
     {
-        std::string sql = "INSERT INTO source(title, content, url) VALUES('" +
+        std::string sql = "insert into source(title, content, url) values('" +
                           escape_string(title) + "','" + escape_string(content) + "','" + escape_string(url) + "')";
         if (mysql_query(mysql_, sql.c_str()) == 0)
             return true;
@@ -152,9 +154,9 @@ public:
         return false;
     }
 
-    void read_source_information(std::vector<std::tuple<std::string, std::string, std::string>> &sources)
+    void read_source_information(std::vector<ns_helper::doc_info> &sources)
     {
-        std::string sql = "SELECT title, content, url FROM source";
+        std::string sql = "select title, content, url from source";
         if (mysql_query(mysql_, sql.c_str()) == 0)
         {
             MYSQL_RES *res = mysql_store_result(mysql_);
@@ -163,10 +165,11 @@ public:
                 MYSQL_ROW row;
                 while ((row = mysql_fetch_row(res)))
                 {
-                    sources.emplace_back(
-                        row[0] ? row[0] : "",
-                        row[1] ? row[1] : "",
-                        row[2] ? row[2] : "");
+                    ns_helper::doc_info doc;
+                    doc.title_ = row[0] ? row[0] : "";
+                    doc.content_ = row[1] ? row[1] : "";
+                    doc.url_ = row[2] ? row[2] : "";
+                    sources.emplace_back(std::move(doc));
                 }
                 mysql_free_result(res);
             }

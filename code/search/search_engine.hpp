@@ -6,9 +6,9 @@
 #include <mutex>
 
 #include <jsoncpp/json/json.h>
-#include "mysql.hpp"
-#include "assistance.hpp"
-#include "index.hpp"
+#include "../mysql.hpp"
+#include "../assistance.hpp"
+#include "../index.hpp"
 
 class Searcher
 {
@@ -87,7 +87,7 @@ public:
 
         for (const auto &it : doc_map)
         {
-            docInfo_index doc;
+            ns_helper::docInfo_index doc;
             if (!index_->search_positive_index(it.doc_id_, doc))
             {
                 continue;

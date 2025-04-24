@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/mufeng/c++/Search_Engines/code
+CMAKE_SOURCE_DIR = /home/mufeng/Search_Engines
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/mufeng/c++/Search_Engines/build
+CMAKE_BINARY_DIR = /home/mufeng/Search_Engines/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/mufeng/c++/Search_Engines/build/CMakeFiles /home/mufeng/c++/Search_Engines/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/mufeng/Search_Engines/build/CMakeFiles /home/mufeng/Search_Engines/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/mufeng/c++/Search_Engines/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/mufeng/Search_Engines/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -142,53 +142,53 @@ server/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/build
 .PHONY : server/fast
 
-parser.o: parser.cpp.o
-.PHONY : parser.o
+code/parser.o: code/parser.cpp.o
+.PHONY : code/parser.o
 
 # target to build an object file
-parser.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/parser.dir/build.make CMakeFiles/parser.dir/parser.cpp.o
-.PHONY : parser.cpp.o
+code/parser.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/parser.dir/build.make CMakeFiles/parser.dir/code/parser.cpp.o
+.PHONY : code/parser.cpp.o
 
-parser.i: parser.cpp.i
-.PHONY : parser.i
+code/parser.i: code/parser.cpp.i
+.PHONY : code/parser.i
 
 # target to preprocess a source file
-parser.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/parser.dir/build.make CMakeFiles/parser.dir/parser.cpp.i
-.PHONY : parser.cpp.i
+code/parser.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/parser.dir/build.make CMakeFiles/parser.dir/code/parser.cpp.i
+.PHONY : code/parser.cpp.i
 
-parser.s: parser.cpp.s
-.PHONY : parser.s
+code/parser.s: code/parser.cpp.s
+.PHONY : code/parser.s
 
 # target to generate assembly for a file
-parser.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/parser.dir/build.make CMakeFiles/parser.dir/parser.cpp.s
-.PHONY : parser.cpp.s
+code/parser.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/parser.dir/build.make CMakeFiles/parser.dir/code/parser.cpp.s
+.PHONY : code/parser.cpp.s
 
-server.o: server.cpp.o
-.PHONY : server.o
+code/server.o: code/server.cpp.o
+.PHONY : code/server.o
 
 # target to build an object file
-server.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/server.cpp.o
-.PHONY : server.cpp.o
+code/server.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server.cpp.o
+.PHONY : code/server.cpp.o
 
-server.i: server.cpp.i
-.PHONY : server.i
+code/server.i: code/server.cpp.i
+.PHONY : code/server.i
 
 # target to preprocess a source file
-server.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/server.cpp.i
-.PHONY : server.cpp.i
+code/server.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server.cpp.i
+.PHONY : code/server.cpp.i
 
-server.s: server.cpp.s
-.PHONY : server.s
+code/server.s: code/server.cpp.s
+.PHONY : code/server.s
 
 # target to generate assembly for a file
-server.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/server.cpp.s
-.PHONY : server.cpp.s
+code/server.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/code/server.cpp.s
+.PHONY : code/server.cpp.s
 
 # Help Target
 help:
@@ -200,12 +200,12 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... parser"
 	@echo "... server"
-	@echo "... parser.o"
-	@echo "... parser.i"
-	@echo "... parser.s"
-	@echo "... server.o"
-	@echo "... server.i"
-	@echo "... server.s"
+	@echo "... code/parser.o"
+	@echo "... code/parser.i"
+	@echo "... code/parser.s"
+	@echo "... code/server.o"
+	@echo "... code/server.i"
+	@echo "... code/server.s"
 .PHONY : help
 
 

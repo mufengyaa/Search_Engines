@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/parser.dir/parser.cpp.o"
-  "CMakeFiles/parser.dir/parser.cpp.o.d"
+  "CMakeFiles/parser.dir/code/parser.cpp.o"
+  "CMakeFiles/parser.dir/code/parser.cpp.o.d"
   "parser"
   "parser.pdb"
 )

@@ -40,6 +40,25 @@ public:
         // 累加词频
         node->freq += freq;
     }
+    std::vector<std::pair<std::string, int>> starts_with(const std::string &prefix)
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        TrieNode *node = root;
+        for (char c : prefix)
+        {
+            if (!node->children.count(c))
+                return {};
+            node = node->children[c];
+        }
+
+        std::vector<std::pair<std::string, int>> results;
+        std::string path = prefix;
+        dfs(node, path, results);
+
+        std::sort(results.begin(), results.end(), [](const auto &a, const auto &b)
+                  { return a.second > b.second; });
+        return results;
+    }
 
 private:
     TrieNode *root;
@@ -61,24 +80,5 @@ private:
             dfs(child, path, results);
             path.pop_back();
         }
-    }
-    std::vector<std::pair<std::string, int>> starts_with(const std::string &prefix)
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        TrieNode *node = root;
-        for (char c : prefix)
-        {
-            if (!node->children.count(c))
-                return {};
-            node = node->children[c];
-        }
-
-        std::vector<std::pair<std::string, int>> results;
-        std::string path = prefix;
-        dfs(node, path, results);
-
-        std::sort(results.begin(), results.end(), [](const auto &a, const auto &b)
-                  { return a.second > b.second; });
-        return results;
     }
 };
