@@ -52,17 +52,26 @@ public:
         }
         return instance_;
     }
-    void init()
+    void Index::init()
     {
-        create_positive_index();
-        lg(INFO, "create positive_index success");
-        for (const auto &it : pos_index_)
+        if (!load_index_from_mysql())
         {
-            create_inverted_index(it);
-            lg(DEBUG, "已建立的索引文档 %d", count++);
+            create_positive_index();
+            lg(INFO, "create positive_index success");
+            for (const auto &it : pos_index_)
+            {
+                create_inverted_index(it);
+                lg(DEBUG, "已建立的索引文档 %d", count++);
+            }
+            save_index_to_mysql(); // 构建完后存入数据库
+            lg(INFO, "create inverted_index success");
         }
-        lg(INFO, "create inverted_index success");
+        else
+        {
+            lg(INFO, "索引已从数据库加载");
+        }
     }
+
     bool search_positive_index(const doc_id_t id, ns_helper::docInfo_index &doc)
     {
         if (id >= pos_index_.size())
