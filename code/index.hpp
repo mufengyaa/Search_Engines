@@ -9,26 +9,12 @@
 #include "assistance.hpp"
 #include "mysql.hpp"
 
-static int count = 0;
-
 namespace fs = boost::filesystem;
-
-struct word_info
-{
-    std::string word_;
-    doc_id_t doc_id_;
-    int weight_; // 这个词在文档中的权重
-    std::string url_;
-};
-using inverted_zipper = std::vector<word_info>;
 
 class Index
 {
-    std::vector<ns_helper::docInfo_index> pos_index_;            // 正排索引
-    std::unordered_map<std::string, inverted_zipper> inv_index_; // 倒排索引
-
-    static Index *instance_;
-    static std::mutex mtx_;
+    std::vector<ns_helper::docInfo_index> pos_index_;                       // 正排索引
+    std::unordered_map<std::string, ns_helper::inverted_zipper> inv_index_; // 倒排索引
 
     Index()
     {
@@ -41,34 +27,37 @@ class Index
 public:
     static Index *get_instance()
     {
-        if (nullptr == instance_)
-        {
-            mtx_.lock();
-            if (nullptr == instance_)
-            {
-                instance_ = new Index;
-            }
-            mtx_.unlock();
-        }
-        return instance_;
+        static Index instance_;
+        return &instance_;
     }
     void Index::init()
     {
-        if (!load_index_from_mysql())
+        // 正排索引构建
+        if (!index_table::instance().has_forward_index_data("forward_index_table"))
         {
+            // 通知线程去创建
             create_positive_index();
             lg(INFO, "create positive_index success");
-            for (const auto &it : pos_index_)
-            {
-                create_inverted_index(it);
-                lg(DEBUG, "已建立的索引文档 %d", count++);
-            }
-            save_index_to_mysql(); // 构建完后存入数据库
+            // 通知其他线程去持久化
+        }
+        else
+        {
+            // 通知线程去读取
+            index_table::instance().load_positive(pos_index_);
+            lg(INFO, "load index from MySQL");
+        }
+
+        // 倒排索引构建
+        if (!index_table::instance().has_forward_index_data("inverted_index_table"))
+        {
+            // 通知线程去创建
+            create_inverted_index();
             lg(INFO, "create inverted_index success");
         }
         else
         {
-            lg(INFO, "索引已从数据库加载");
+            index_table::instance().load_inverted(inv_index_);
+            lg(INFO, "load index from MySQL");
         }
     }
 
@@ -109,7 +98,14 @@ private:
             pos_index_.push_back(std::move(di));
         }
     }
-    void create_inverted_index(const ns_helper::docInfo_index &doc) // 以文档为单位
+    void create_inverted_index() // 以文档为单位
+    {
+        for (const auto &it : pos_index_)
+        {
+            help_create_inverted_index(it);
+        }
+    }
+    void help_create_inverted_index(const ns_helper::docInfo_index &doc)
     {
         struct word_cnt
         {
@@ -153,5 +149,3 @@ private:
         }
     }
 };
-Index *Index::instance_ = nullptr;
-std::mutex Index::mtx_;

@@ -1,12 +1,22 @@
 {
     "configurations": [
         {
+            "name": "Windows",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "compilerPath": "C:/MinGW/bin/g++.exe", // 如果使用 MinGW 安装的 g++
+            "intelliSenseMode": "windows-gcc-x64",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
+        },
+        {
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**"
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/g++-11",
+            "compilerPath": "/usr/bin/g++-11", // 适用于 Linux 上的 g++
             "intelliSenseMode": "linux-clang-x64",
             "compileCommands": "${workspaceFolder}/build/compile_commands.json"
         }

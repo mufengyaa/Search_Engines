@@ -17,6 +17,7 @@
 
 namespace ns_helper
 {
+    // 数据结构
     struct doc_info
     {
         std::string title_;
@@ -35,22 +36,26 @@ namespace ns_helper
             url_ = doc.url_;
         }
     };
-
-    void read_file(const std::string &path, std::string &data)
+    struct word_info
     {
-        std::ifstream in(path, std::ios_base::in);
-        if (!in.is_open())
-        {
-            lg(ERROR, "file: %s open failed", path.c_str());
-        }
-        std::string line;
-        while (std::getline(in, line))
-        {
-            data += line;
-        }
-        in.close();
+        std::string word_;
+        doc_id_t doc_id_;
+        int weight_; // 这个词在文档中的权重
+        std::string url_;
+    };
+    using inverted_zipper = std::vector<word_info>;
+
+    // 转义字符串，防止 SQL 注入
+    std::string escape_string(const std::string &input)
+    {
+        char *buffer = new char[input.size() * 2 + 1];
+        mysql_real_escape_string(mysql_, buffer, input.c_str(), input.size());
+        std::string result(buffer);
+        delete[] buffer;
+        return result;
     }
 
+    // 分词
     const char *const DICT_PATH = "/home/mufeng/c++/Search_Engines/build/dict/jieba.dict.utf8";
     const char *const HMM_PATH = "/home/mufeng/c++/Search_Engines/build/dict/hmm_model.utf8";
     const char *const USER_DICT_PATH = "/home/mufeng/c++/Search_Engines/build/dict/user.dict.utf8";

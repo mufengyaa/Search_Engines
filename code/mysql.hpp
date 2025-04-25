@@ -147,7 +147,7 @@ public:
     bool write_source_information(const std::string &title, const std::string &content, const std::string &url)
     {
         std::string sql = "insert into source(title, content, url) values('" +
-                          escape_string(title) + "','" + escape_string(content) + "','" + escape_string(url) + "')";
+                          ns_helper::escape_string(title) + "','" + ns_helper::escape_string(content) + "','" + ns_helper::escape_string(url) + "')";
         if (mysql_query(mysql_, sql.c_str()) == 0)
             return true;
         lg(ERROR, "%s", mysql_error(mysql_));
@@ -185,15 +185,6 @@ private:
     ~source_table() = default;
     source_table(const source_table &) = delete;
     source_table &operator=(const source_table &) = delete;
-
-    std::string escape_string(const std::string &input)
-    {
-        char *buffer = new char[input.size() * 2 + 1];
-        mysql_real_escape_string(mysql_, buffer, input.c_str(), input.size());
-        std::string result(buffer);
-        delete[] buffer;
-        return result;
-    }
 };
 
 // ---------- index_table 单例 ----------
@@ -206,10 +197,10 @@ public:
         return instance_;
     }
 
-    // 从 MySQL 加载正排索引数据
-    void load_positive(std::vector<std::tuple<int, std::string>> &index)
+    // 正排索引
+    void load_positive(std::vector<ns_helper::docInfo_index> &index)
     {
-        std::string sql = "SELECT doc_id, content FROM forward_index_table"; // 假设表名为 forward_index_table
+        std::string sql = "SELECT doc_id, title, content, url FROM forward_index_table";
         if (mysql_query(mysql_, sql.c_str()) == 0)
         {
             MYSQL_RES *res = mysql_store_result(mysql_);
@@ -218,9 +209,12 @@ public:
                 MYSQL_ROW row;
                 while ((row = mysql_fetch_row(res)))
                 {
-                    int doc_id = std::stoi(row[0]);
-                    std::string content = row[1] ? row[1] : "";
-                    index.push_back(std::make_tuple(doc_id, content));
+                    ns_helper::docInfo_index doc;
+                    doc.doc_id_ = std::stoi(row[0]);
+                    doc.title_ = row[1] ? row[1] : "";
+                    doc.content_ = row[2] ? row[2] : "";
+                    doc.url_ = row[3] ? row[3] : "";
+                    index.emplace_back(std::move(doc));
                 }
                 mysql_free_result(res);
             }
@@ -234,17 +228,22 @@ public:
             std::cerr << mysql_error(mysql_) << std::endl;
         }
     }
-
-    // 保存正排索引数据到 MySQL
-    bool save_forward_index_to_mysql(const std::vector<std::tuple<int, std::string>> &index)
+    bool save_positive(const std::vector<ns_helper::docInfo_index> &index)
     {
         for (const auto &item : index)
         {
             int doc_id = std::get<0>(item);
-            const std::string &content = std::get<1>(item);
+            const std::string &title = std::get<1>(item);
+            const std::string &content = std::get<2>(item);
+            const std::string &url = std::get<3>(item);
 
-            std::string sql = "INSERT INTO forward_index_table (doc_id, content) VALUES (" +
-                              std::to_string(doc_id) + ",'" + escape_string(content) + "')";
+            std::string escaped_title = ns_helper::escape_string(mysql_, title);
+            std::string escaped_content = ns_helper::escape_string(mysql_, content);
+            std::string escaped_url = ns_helper::escape_string(mysql_, url);
+
+            std::string sql = "INSERT INTO forward_index_table (doc_id, title, content, url) VALUES (" +
+                              std::to_string(doc_id) + ", '" + escaped_title + "', '" +
+                              escaped_content + "', '" + escaped_url + "')";
 
             if (mysql_query(mysql_, sql.c_str()) != 0)
             {
@@ -255,10 +254,10 @@ public:
         return true;
     }
 
-        // 从 MySQL 加载倒排索引数据
-    void load_inverted_index_from_mysql(std::unordered_map<std::string, std::vector<int>> &index)
+    // 倒排索引
+    void load_inverted(std::unordered_map<std::string, ns_helper::inverted_zipper> &index)
     {
-        std::string sql = "SELECT word, doc_id FROM inverted_index_table"; // 假设表名为 inverted_index_table
+        std::string sql = "SELECT word, doc_id, weight, url FROM inverted_index_table";
         if (mysql_query(mysql_, sql.c_str()) == 0)
         {
             MYSQL_RES *res = mysql_store_result(mysql_);
@@ -269,7 +268,11 @@ public:
                 {
                     std::string word = row[0] ? row[0] : "";
                     int doc_id = std::stoi(row[1]);
-                    index[word].push_back(doc_id);
+                    int weight = std::stoi(row[2]);
+                    std::string url = row[3] ? row[3] : "";
+
+                    ns_helper::word_info info{word, doc_id, weight, url};
+                    index[word].push_back(std::move(info));
                 }
                 mysql_free_result(res);
             }
@@ -283,19 +286,20 @@ public:
             std::cerr << mysql_error(mysql_) << std::endl;
         }
     }
-
-    // 保存倒排索引数据到 MySQL
-    bool save_inverted_index_to_mysql(const std::unordered_map<std::string, std::vector<int>> &index)
+    bool save_inverted(const std::unordered_map<std::string, ns_helper::inverted_zipper> &index)
     {
         for (const auto &entry : index)
         {
             const std::string &word = entry.first;
-            const std::vector<int> &doc_ids = entry.second;
+            const auto &infos = entry.second;
 
-            for (int doc_id : doc_ids)
+            for (const auto &info : infos)
             {
-                std::string sql = "INSERT INTO inverted_index_table (word, doc_id) VALUES ('" +
-                                  escape_string(word) + "', " + std::to_string(doc_id) + ")";
+                std::string escaped_word = ns_helper::escape_string(mysql_, word);
+                std::string escaped_url = ns_helper::escape_string(mysql_, info.url_);
+                std::string sql = "INSERT INTO inverted_index_table (word, doc_id, weight, url) VALUES ('" +
+                                  escaped_word + "', " + std::to_string(info.doc_id_) + ", " +
+                                  std::to_string(info.weight_) + ", '" + escaped_url + "')";
 
                 if (mysql_query(mysql_, sql.c_str()) != 0)
                 {
@@ -313,13 +317,28 @@ private:
     index_table(const index_table &) = delete;
     index_table &operator=(const index_table &) = delete;
 
-    // 转义字符串，防止 SQL 注入
-    std::string escape_string(const std::string &input)
+    bool has_forward_index_data(const std::string &table)
     {
-        char *buffer = new char[input.size() * 2 + 1];
-        mysql_real_escape_string(mysql_, buffer, input.c_str(), input.size());
-        std::string result(buffer);
-        delete[] buffer;
-        return result;
+        std::string sql = "SELECT COUNT(*) FROM" + table;
+        if (mysql_query(mysql_, sql.c_str()) == 0)
+        {
+            MYSQL_RES *res = mysql_store_result(mysql_);
+            if (res)
+            {
+                MYSQL_ROW row = mysql_fetch_row(res);
+                if (row && row[0])
+                {
+                    int count = std::stoi(row[0]);
+                    mysql_free_result(res);
+                    return count > 0; // 有数据就返回 true
+                }
+                mysql_free_result(res);
+            }
+        }
+        else
+        {
+            std::cerr << "MySQL query failed: " << mysql_error(mysql_) << std::endl;
+        }
+        return false;
     }
 };
