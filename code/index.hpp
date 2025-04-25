@@ -33,8 +33,7 @@ public:
     }
     void init()
     {
-        FixedThreadPool &pool = FixedThreadPool::get_instance(5, 10); // 4个线程，任务队列大小10
-
+        FixedThreadPool &pool = FixedThreadPool::get_instance();
         // 正排索引构建
         if (!index_table::instance().has_forward_index_data("forward_index_table"))
         {
@@ -88,7 +87,7 @@ public:
         doc = pos_index_[id];
         return true;
     }
-    bool search_inverted_index(const std::string &target, inverted_zipper &iz)
+    bool search_inverted_index(const std::string &target, ns_helper::inverted_zipper &iz)
     {
         auto ret = inv_index_.find(target);
         if (ret == inv_index_.end())
@@ -158,7 +157,7 @@ private:
 #define content_count 1
         for (const auto &it : cnt_map)
         {
-            word_info t;
+            ns_helper::word_info t;
             t.doc_id_ = doc.doc_id_;
             t.url_ = doc.url_;
             t.word_ = it.first;

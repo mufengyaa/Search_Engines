@@ -73,15 +73,15 @@ CMakeFiles/server.dir/code/server.cpp.o: CMakeFiles/server.dir/flags.make
 CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp
 CMakeFiles/server.dir/code/server.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mufeng/Search_Engines/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/server.dir/code/server.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/code/server.cpp.o -MF CMakeFiles/server.dir/code/server.cpp.o.d -o CMakeFiles/server.dir/code/server.cpp.o -c /home/mufeng/Search_Engines/code/server.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/code/server.cpp.o -MF CMakeFiles/server.dir/code/server.cpp.o.d -o CMakeFiles/server.dir/code/server.cpp.o -c /home/mufeng/Search_Engines/code/server.cpp
 
 CMakeFiles/server.dir/code/server.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/code/server.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/mufeng/Search_Engines/code/server.cpp > CMakeFiles/server.dir/code/server.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/mufeng/Search_Engines/code/server.cpp > CMakeFiles/server.dir/code/server.cpp.i
 
 CMakeFiles/server.dir/code/server.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/code/server.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/mufeng/Search_Engines/code/server.cpp -o CMakeFiles/server.dir/code/server.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/mufeng/Search_Engines/code/server.cpp -o CMakeFiles/server.dir/code/server.cpp.s
 
 # Object files for target server
 server_OBJECTS = \

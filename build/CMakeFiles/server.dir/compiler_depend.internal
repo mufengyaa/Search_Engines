@@ -421,6 +421,7 @@ CMakeFiles/server.dir/code/server.cpp.o
  /usr/include/jsoncpp/json/value.h
  /usr/include/jsoncpp/json/writer.h
  /home/mufeng/Search_Engines/code/mysql.hpp
+ /home/mufeng/Search_Engines/code/assistance.hpp
  /usr/include/mysql/mysql.h
  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdbool.h
  /usr/include/mysql/field_types.h
@@ -435,7 +436,6 @@ CMakeFiles/server.dir/code/server.cpp.o
  /usr/include/mysql/mysql_version.h
  /usr/include/mysql/mysql_time.h
  /usr/include/mysql/errmsg.h
- /home/mufeng/Search_Engines/code/assistance.hpp
  /home/mufeng/Search_Engines/build/inc/cppjieba/Jieba.hpp
  /home/mufeng/Search_Engines/build/inc/cppjieba/QuerySegment.hpp
  /usr/include/c++/11/set
@@ -913,6 +913,9 @@ CMakeFiles/server.dir/code/server.cpp.o
  /usr/include/boost/algorithm/string/formatter.hpp
  /usr/include/boost/algorithm/string/detail/formatter.hpp
  /usr/include/boost/algorithm/string/erase.hpp
+ /home/mufeng/Search_Engines/code/FixedThreadPool.hpp
+ /usr/include/c++/11/future
+ /usr/include/c++/11/bits/atomic_futex.h
  /home/mufeng/Search_Engines/code/search/suggest.hpp
  /home/mufeng/Search_Engines/code/search/trie.hpp
  /home/mufeng/Search_Engines/code/auth.hpp
@@ -924,4 +927,84 @@ CMakeFiles/server.dir/code/server.cpp.o
  /usr/include/openssl/e_os2.h
  /usr/include/c++/11/iomanip
  /usr/include/c++/11/bits/quoted_string.h
+ /usr/include/sodium.h
+ /usr/include/sodium/version.h
+ /usr/include/sodium/export.h
+ /usr/include/sodium/core.h
+ /usr/include/sodium/crypto_aead_aes256gcm.h
+ /usr/include/sodium/crypto_aead_chacha20poly1305.h
+ /usr/include/sodium/crypto_aead_xchacha20poly1305.h
+ /usr/include/sodium/crypto_auth.h
+ /usr/include/sodium/crypto_auth_hmacsha512256.h
+ /usr/include/sodium/crypto_auth_hmacsha512.h
+ /usr/include/sodium/crypto_hash_sha512.h
+ /usr/include/sodium/crypto_auth_hmacsha256.h
+ /usr/include/sodium/crypto_hash_sha256.h
+ /usr/include/sodium/crypto_auth_hmacsha512.h
+ /usr/include/sodium/crypto_auth_hmacsha512256.h
+ /usr/include/sodium/crypto_box.h
+ /usr/include/sodium/crypto_box_curve25519xsalsa20poly1305.h
+ /usr/include/sodium/crypto_stream_xsalsa20.h
+ /usr/include/sodium/crypto_box_curve25519xsalsa20poly1305.h
+ /usr/include/sodium/crypto_core_hsalsa20.h
+ /usr/include/sodium/crypto_core_hchacha20.h
+ /usr/include/sodium/crypto_core_salsa20.h
+ /usr/include/sodium/crypto_core_salsa2012.h
+ /usr/include/sodium/crypto_core_salsa208.h
+ /usr/include/sodium/crypto_generichash.h
+ /usr/include/sodium/crypto_generichash_blake2b.h
+ /usr/include/sodium/crypto_generichash_blake2b.h
+ /usr/include/sodium/crypto_hash.h
+ /usr/include/sodium/crypto_hash_sha256.h
+ /usr/include/sodium/crypto_hash_sha512.h
+ /usr/include/sodium/crypto_kdf.h
+ /usr/include/sodium/crypto_kdf_blake2b.h
+ /usr/include/sodium/crypto_kdf_blake2b.h
+ /usr/include/sodium/crypto_kx.h
+ /usr/include/sodium/crypto_onetimeauth.h
+ /usr/include/sodium/crypto_onetimeauth_poly1305.h
+ /usr/include/sodium/crypto_onetimeauth_poly1305.h
+ /usr/include/sodium/crypto_pwhash.h
+ /usr/include/sodium/crypto_pwhash_argon2i.h
+ /usr/include/sodium/crypto_pwhash_argon2id.h
+ /usr/include/sodium/crypto_pwhash_argon2i.h
+ /usr/include/sodium/crypto_scalarmult.h
+ /usr/include/sodium/crypto_scalarmult_curve25519.h
+ /usr/include/sodium/crypto_scalarmult_curve25519.h
+ /usr/include/sodium/crypto_secretbox.h
+ /usr/include/sodium/crypto_secretbox_xsalsa20poly1305.h
+ /usr/include/sodium/crypto_secretbox_xsalsa20poly1305.h
+ /usr/include/sodium/crypto_secretstream_xchacha20poly1305.h
+ /usr/include/sodium/crypto_aead_xchacha20poly1305.h
+ /usr/include/sodium/crypto_stream_chacha20.h
+ /usr/include/sodium/crypto_shorthash.h
+ /usr/include/sodium/crypto_shorthash_siphash24.h
+ /usr/include/sodium/crypto_shorthash_siphash24.h
+ /usr/include/sodium/crypto_sign.h
+ /usr/include/sodium/crypto_sign_ed25519.h
+ /usr/include/sodium/crypto_sign_ed25519.h
+ /usr/include/sodium/crypto_stream.h
+ /usr/include/sodium/crypto_stream_chacha20.h
+ /usr/include/sodium/crypto_stream_salsa20.h
+ /usr/include/sodium/crypto_stream_xsalsa20.h
+ /usr/include/sodium/crypto_verify_16.h
+ /usr/include/sodium/crypto_verify_32.h
+ /usr/include/sodium/crypto_verify_64.h
+ /usr/include/sodium/randombytes.h
+ /usr/include/sodium/randombytes_internal_random.h
+ /usr/include/sodium/randombytes.h
+ /usr/include/sodium/randombytes_sysrandom.h
+ /usr/include/sodium/runtime.h
+ /usr/include/sodium/utils.h
+ /usr/include/sodium/crypto_box_curve25519xchacha20poly1305.h
+ /usr/include/sodium/crypto_stream_xchacha20.h
+ /usr/include/sodium/crypto_core_ed25519.h
+ /usr/include/sodium/crypto_core_ristretto255.h
+ /usr/include/sodium/crypto_scalarmult_ed25519.h
+ /usr/include/sodium/crypto_scalarmult_ristretto255.h
+ /usr/include/sodium/crypto_secretbox_xchacha20poly1305.h
+ /usr/include/sodium/crypto_pwhash_scryptsalsa208sha256.h
+ /usr/include/sodium/crypto_stream_salsa2012.h
+ /usr/include/sodium/crypto_stream_salsa208.h
+ /usr/include/sodium/crypto_stream_xchacha20.h
 

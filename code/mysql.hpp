@@ -4,8 +4,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <tuple>
-#include <mysql/mysql.h>
 
 #include "assistance.hpp"
 
@@ -38,7 +36,8 @@ protected:
                     std::cerr << "connect failed\n";
                     exit(1);
                 }
-                mysql_set_character_set(mysql_, "utf8");
+                mysql_set_character_set(mysql_, "utf8mb4");
+                std::cerr << "mysql connect success\n";
             }
         }
     }
@@ -100,16 +99,62 @@ public:
 
     bool write_user_information(const std::string &name, const std::string &password)
     {
-        std::string sql = "insert into user(name,password) values('" + name + "','" + password + "')";
-        if (mysql_query(mysql_, sql.c_str()) == 0)
-            return true;
-        lg(ERROR, "%s", mysql_error(mysql_));
-        return false;
+        std::string sql = "INSERT INTO user(name, password) VALUES(?, ?)";
+
+        // 预处理 SQL 语句
+        MYSQL_STMT *stmt = mysql_stmt_init(mysql_);
+        if (!stmt)
+        {
+            std::cerr << "mysql_stmt_init failed" << std::endl;
+            return false;
+        }
+
+        // 准备 SQL 语句
+        if (mysql_stmt_prepare(stmt, sql.c_str(), sql.length()) != 0)
+        {
+            std::cerr << "mysql_stmt_prepare failed: " << mysql_error(mysql_) << std::endl;
+            mysql_stmt_close(stmt);
+            return false;
+        }
+
+        // 绑定参数
+        MYSQL_BIND bind[2];
+        memset(bind, 0, sizeof(bind));
+
+        // 设置第一个参数（name）
+        bind[0].buffer_type = MYSQL_TYPE_STRING;
+        bind[0].buffer = (char *)name.c_str();
+        bind[0].buffer_length = name.length();
+
+        // 设置第二个参数（password）
+        bind[1].buffer_type = MYSQL_TYPE_STRING;
+        bind[1].buffer = (char *)password.c_str();
+        bind[1].buffer_length = password.length();
+
+        if (mysql_stmt_bind_param(stmt, bind) != 0)
+        {
+            std::cerr << "mysql_stmt_bind_param failed: " << mysql_error(mysql_) << std::endl;
+            mysql_stmt_close(stmt);
+            return false;
+        }
+
+        // 执行查询
+        if (mysql_stmt_execute(stmt) != 0)
+        {
+            std::cerr << "mysql_stmt_execute failed: " << mysql_error(mysql_) << std::endl;
+            mysql_stmt_close(stmt);
+            return false;
+        }
+
+        // 关闭语句
+        mysql_stmt_close(stmt);
+        return true;
     }
 
     void read_user_information(std::unordered_map<std::string, std::string> &users)
     {
-        std::string sql = "select name,password from user";
+        std::string sql = "SELECT name, password FROM user";
+
         if (mysql_query(mysql_, sql.c_str()) == 0)
         {
             MYSQL_RES *res = mysql_store_result(mysql_);
@@ -147,7 +192,7 @@ public:
     bool write_source_information(const std::string &title, const std::string &content, const std::string &url)
     {
         std::string sql = "insert into source(title, content, url) values('" +
-                          ns_helper::escape_string(title) + "','" + ns_helper::escape_string(content) + "','" + ns_helper::escape_string(url) + "')";
+                          ns_helper::escape_string(mysql_, title) + "','" + ns_helper::escape_string(mysql_, content) + "','" + ns_helper::escape_string(mysql_, url) + "')";
         if (mysql_query(mysql_, sql.c_str()) == 0)
             return true;
         lg(ERROR, "%s", mysql_error(mysql_));
@@ -197,6 +242,31 @@ public:
         return instance_;
     }
 
+    bool has_forward_index_data(const std::string &table)
+    {
+        std::string sql = "SELECT COUNT(*) FROM" + table;
+        if (mysql_query(mysql_, sql.c_str()) == 0)
+        {
+            MYSQL_RES *res = mysql_store_result(mysql_);
+            if (res)
+            {
+                MYSQL_ROW row = mysql_fetch_row(res);
+                if (row && row[0])
+                {
+                    int count = std::stoi(row[0]);
+                    mysql_free_result(res);
+                    return count > 0; // 有数据就返回 true
+                }
+                mysql_free_result(res);
+            }
+        }
+        else
+        {
+            std::cerr << "MySQL query failed: " << mysql_error(mysql_) << std::endl;
+        }
+        return false;
+    }
+
     // 正排索引
     void load_positive(std::vector<ns_helper::docInfo_index> &index)
     {
@@ -232,10 +302,10 @@ public:
     {
         for (const auto &item : index)
         {
-            int doc_id = std::get<0>(item);
-            const std::string &title = std::get<1>(item);
-            const std::string &content = std::get<2>(item);
-            const std::string &url = std::get<3>(item);
+            int doc_id = item.doc_id_;
+            const std::string &title = item.title_;
+            const std::string &content = item.content_;
+            const std::string &url = item.url_;
 
             std::string escaped_title = ns_helper::escape_string(mysql_, title);
             std::string escaped_content = ns_helper::escape_string(mysql_, content);
@@ -316,29 +386,4 @@ private:
     ~index_table() = default;
     index_table(const index_table &) = delete;
     index_table &operator=(const index_table &) = delete;
-
-    bool has_forward_index_data(const std::string &table)
-    {
-        std::string sql = "SELECT COUNT(*) FROM" + table;
-        if (mysql_query(mysql_, sql.c_str()) == 0)
-        {
-            MYSQL_RES *res = mysql_store_result(mysql_);
-            if (res)
-            {
-                MYSQL_ROW row = mysql_fetch_row(res);
-                if (row && row[0])
-                {
-                    int count = std::stoi(row[0]);
-                    mysql_free_result(res);
-                    return count > 0; // 有数据就返回 true
-                }
-                mysql_free_result(res);
-            }
-        }
-        else
-        {
-            std::cerr << "MySQL query failed: " << mysql_error(mysql_) << std::endl;
-        }
-        return false;
-    }
 };

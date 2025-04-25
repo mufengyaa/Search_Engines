@@ -112,6 +112,6 @@
         "xtr1common": "cpp",
         "resumable": "cpp"
     },
-    "cmake.sourceDirectory": "C:/Users/mech-mind/Search_Engines/code",
+    "cmake.sourceDirectory": "/home/mufeng/Search_Engines",
     "C_Cpp.default.compilerPath": "/usr/bin/g++"
 }

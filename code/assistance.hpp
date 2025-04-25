@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include <mysql/mysql.h>
 
 #include "../build/inc/cppjieba/Jieba.hpp"
 #include "../build/inc/cppjieba/limonp/StringUtil.hpp"
@@ -45,8 +46,22 @@ namespace ns_helper
     };
     using inverted_zipper = std::vector<word_info>;
 
+    void read_file(const std::string &path, std::string &data)
+    {
+        std::ifstream in(path, std::ios_base::in);
+        if (!in.is_open())
+        {
+            lg(ERROR, "file: %s open failed", path.c_str());
+        }
+        std::string line;
+        while (std::getline(in, line))
+        {
+            data += line;
+        }
+        in.close();
+    }
     // 转义字符串，防止 SQL 注入
-    std::string escape_string(const std::string &input)
+    std::string escape_string(MYSQL *mysql_, const std::string &input)
     {
         char *buffer = new char[input.size() * 2 + 1];
         mysql_real_escape_string(mysql_, buffer, input.c_str(), input.size());

@@ -7,6 +7,7 @@
 #include <sstream>
 #include <iomanip>
 #include "mysql.hpp"
+#include <sodium.h>
 
 enum user_status
 {
@@ -15,6 +16,36 @@ enum user_status
     WRONG,
     FAILED
 };
+
+std::string generateHash(const std::string &password)
+{
+    unsigned char hash[crypto_pwhash_STRBYTES];
+    std::string hashed_password;
+    // 调用 libsodium 的 Argon2 算法进行哈希
+    if (crypto_pwhash_str(
+            reinterpret_cast<char *>(hash), password.c_str(),
+            password.size(), crypto_pwhash_OPSLIMIT_INTERACTIVE, crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0)
+    {
+        std::cerr << "Error: hash generation failed" << std::endl;
+        return password;
+    }
+
+    hashed_password.assign(reinterpret_cast<char *>(hash), crypto_pwhash_STRBYTES);
+    return hashed_password;
+}
+
+bool validatePassword(const std::string &password, const std::string &hashed_password)
+{
+    // 调用 libsodium 的验证函数来验证密码
+    if (crypto_pwhash_str_verify(
+            reinterpret_cast<const char *>(hashed_password.c_str()),
+            password.c_str(), password.size()) != 0)
+    {
+        std::cerr << "Error: password verification failed" << std::endl;
+        return false;
+    }
+    return true;
+}
 
 class auth_manager
 {
@@ -32,12 +63,9 @@ public:
         {
             return user_status::FAILED;
         }
-
         // 比较两个哈希值
-        std::string stored_password_hash = users_[username];
-        std::string salt = stored_password_hash.substr(0, 16); // 设置盐是哈希值的前 16 位
-        std::string input_password_hash = hash_password(password, salt);
-        if (input_password_hash != stored_password_hash)
+        bool ret = check_password(password, users_[username]);
+        if (ret == false)
         {
             return user_status::WRONG;
         }
@@ -57,8 +85,7 @@ public:
         }
 
         // 生成
-        std::string salt = generate_salt();
-        std::string password_hash = hash_password(password, salt);
+        std::string password_hash = hash_password(password);
 
         // 存储哈希密码到数据库
         if (!user_table::instance().write_user_information(username, password_hash))
@@ -99,25 +126,13 @@ private:
         return salt;
     }
 
-    std::string hash_password(const std::string &password, const std::string &salt)
+    std::string hash_password(const std::string &password)
     {
-        unsigned char hash[SHA256_DIGEST_LENGTH];
-        // 定义和初始化 SHA256 哈希算法的上下文结构体，在计算哈希值的过程中记录中间状态
-        SHA256_CTX sha256;
-        SHA256_Init(&sha256);
-        // 添加盐值和密码到哈希过程中
-        SHA256_Update(&sha256, salt.c_str(), salt.size());
-        SHA256_Update(&sha256, password.c_str(), password.size());
-        // 计算
-        SHA256_Final(hash, &sha256);
-
-        // 将哈希值转换为十六进制字符串的流
-        std::stringstream ss;
-        for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i)
-        {
-            ss << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
-        }
-        return salt + ss.str(); // 加盐哈希值
+        return generateHash(password); // 自动加盐 + 哈希
+    }
+    bool check_password(const std::string &password, const std::string &hashed)
+    {
+        return validatePassword(password, hashed);
     }
 
     void load_user_data()

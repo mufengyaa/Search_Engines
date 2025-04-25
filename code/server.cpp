@@ -10,21 +10,6 @@
 
 // 101.126.142.54:8080
 
-httplib::Server *init()
-{
-    Searcher s;
-    ns_helper::jieba_util::get_instance()->init();
-
-    // 读取用户表
-    std::unordered_map<std::string, std::string> users;
-    user_table::instance().read_user_information(users);
-
-    // 初始化服务器
-    httplib::Server svr;
-    svr.set_base_dir(root_path);
-    return &svr;
-}
-
 // 用户注册
 void handle_register(const httplib::Request &req, httplib::Response &rsp)
 {
@@ -95,7 +80,7 @@ void handle_login(const httplib::Request &req, httplib::Response &rsp)
 
 // 搜索
 // 搜索请求处理
-void handle_search(const httplib::Request &req, httplib::Response &rsp, const SearchEngine &s)
+void handle_search(const httplib::Request &req, httplib::Response &rsp)
 {
     // 检查是否有搜索关键字
     if (!req.has_param("word"))
@@ -117,7 +102,8 @@ void handle_search(const httplib::Request &req, httplib::Response &rsp, const Se
         if (req.has_param("search") && req.get_param_value("search") == "true")
         {
             std::string json_string;
-            s.search(word, &json_string);
+
+            Searcher::instance().search(word, &json_string);
             rsp.set_content(json_string, "application/json");
         }
         else
@@ -134,15 +120,23 @@ void handle_search(const httplib::Request &req, httplib::Response &rsp, const Se
 
 int main()
 {
-    httplib::Server *svr = init();
+    ns_helper::jieba_util::get_instance()->init();
 
-    svr->Post("/register", handle_register);
-    svr->Post("/login", handle_login);
-    svr->Get("/s", [&s](const httplib::Request &req, httplib::Response &rsp)
-             { handle_search(req, rsp, s); });
+    // 读取用户表
+    std::unordered_map<std::string, std::string> users;
+    user_table::instance().read_user_information(users);
+
+    // 初始化服务器
+    httplib::Server svr;
+    svr.set_base_dir(root_path);
+
+    svr.Post("/register", handle_register);
+    svr.Post("/login", handle_login);
+    svr.Get("/s", [](const httplib::Request &req, httplib::Response &rsp)
+            { handle_search(req, rsp); });
 
     std::cout << "Starting server on port 8080..." << std::endl;
-    svr->listen("0.0.0.0", 8080);
+    svr.listen("0.0.0.0", 8080);
     std::cout << "Server is listening..." << std::endl;
     return 0;
 }

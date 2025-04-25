@@ -420,6 +420,7 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
   /usr/include/jsoncpp/json/value.h \
   /usr/include/jsoncpp/json/writer.h \
   ../code/mysql.hpp \
+  ../code/assistance.hpp \
   /usr/include/mysql/mysql.h \
   /usr/lib/gcc/x86_64-linux-gnu/11/include/stdbool.h \
   /usr/include/mysql/field_types.h \
@@ -434,7 +435,6 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
   /usr/include/mysql/mysql_version.h \
   /usr/include/mysql/mysql_time.h \
   /usr/include/mysql/errmsg.h \
-  ../code/assistance.hpp \
   inc/cppjieba/Jieba.hpp \
   inc/cppjieba/QuerySegment.hpp \
   /usr/include/c++/11/set \
@@ -912,6 +912,9 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
   /usr/include/boost/algorithm/string/formatter.hpp \
   /usr/include/boost/algorithm/string/detail/formatter.hpp \
   /usr/include/boost/algorithm/string/erase.hpp \
+  ../code/FixedThreadPool.hpp \
+  /usr/include/c++/11/future \
+  /usr/include/c++/11/bits/atomic_futex.h \
   ../code/search/suggest.hpp \
   ../code/search/trie.hpp \
   ../code/auth.hpp \
@@ -922,8 +925,150 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
   /usr/include/openssl/opensslv.h \
   /usr/include/openssl/e_os2.h \
   /usr/include/c++/11/iomanip \
-  /usr/include/c++/11/bits/quoted_string.h
+  /usr/include/c++/11/bits/quoted_string.h \
+  /usr/include/sodium.h \
+  /usr/include/sodium/version.h \
+  /usr/include/sodium/export.h \
+  /usr/include/sodium/core.h \
+  /usr/include/sodium/crypto_aead_aes256gcm.h \
+  /usr/include/sodium/crypto_aead_chacha20poly1305.h \
+  /usr/include/sodium/crypto_aead_xchacha20poly1305.h \
+  /usr/include/sodium/crypto_auth.h \
+  /usr/include/sodium/crypto_auth_hmacsha512256.h \
+  /usr/include/sodium/crypto_auth_hmacsha512.h \
+  /usr/include/sodium/crypto_hash_sha512.h \
+  /usr/include/sodium/crypto_auth_hmacsha256.h \
+  /usr/include/sodium/crypto_hash_sha256.h \
+  /usr/include/sodium/crypto_auth_hmacsha512.h \
+  /usr/include/sodium/crypto_auth_hmacsha512256.h \
+  /usr/include/sodium/crypto_box.h \
+  /usr/include/sodium/crypto_box_curve25519xsalsa20poly1305.h \
+  /usr/include/sodium/crypto_stream_xsalsa20.h \
+  /usr/include/sodium/crypto_box_curve25519xsalsa20poly1305.h \
+  /usr/include/sodium/crypto_core_hsalsa20.h \
+  /usr/include/sodium/crypto_core_hchacha20.h \
+  /usr/include/sodium/crypto_core_salsa20.h \
+  /usr/include/sodium/crypto_core_salsa2012.h \
+  /usr/include/sodium/crypto_core_salsa208.h \
+  /usr/include/sodium/crypto_generichash.h \
+  /usr/include/sodium/crypto_generichash_blake2b.h \
+  /usr/include/sodium/crypto_generichash_blake2b.h \
+  /usr/include/sodium/crypto_hash.h \
+  /usr/include/sodium/crypto_hash_sha256.h \
+  /usr/include/sodium/crypto_hash_sha512.h \
+  /usr/include/sodium/crypto_kdf.h \
+  /usr/include/sodium/crypto_kdf_blake2b.h \
+  /usr/include/sodium/crypto_kdf_blake2b.h \
+  /usr/include/sodium/crypto_kx.h \
+  /usr/include/sodium/crypto_onetimeauth.h \
+  /usr/include/sodium/crypto_onetimeauth_poly1305.h \
+  /usr/include/sodium/crypto_onetimeauth_poly1305.h \
+  /usr/include/sodium/crypto_pwhash.h \
+  /usr/include/sodium/crypto_pwhash_argon2i.h \
+  /usr/include/sodium/crypto_pwhash_argon2id.h \
+  /usr/include/sodium/crypto_pwhash_argon2i.h \
+  /usr/include/sodium/crypto_scalarmult.h \
+  /usr/include/sodium/crypto_scalarmult_curve25519.h \
+  /usr/include/sodium/crypto_scalarmult_curve25519.h \
+  /usr/include/sodium/crypto_secretbox.h \
+  /usr/include/sodium/crypto_secretbox_xsalsa20poly1305.h \
+  /usr/include/sodium/crypto_secretbox_xsalsa20poly1305.h \
+  /usr/include/sodium/crypto_secretstream_xchacha20poly1305.h \
+  /usr/include/sodium/crypto_aead_xchacha20poly1305.h \
+  /usr/include/sodium/crypto_stream_chacha20.h \
+  /usr/include/sodium/crypto_shorthash.h \
+  /usr/include/sodium/crypto_shorthash_siphash24.h \
+  /usr/include/sodium/crypto_shorthash_siphash24.h \
+  /usr/include/sodium/crypto_sign.h \
+  /usr/include/sodium/crypto_sign_ed25519.h \
+  /usr/include/sodium/crypto_sign_ed25519.h \
+  /usr/include/sodium/crypto_stream.h \
+  /usr/include/sodium/crypto_stream_chacha20.h \
+  /usr/include/sodium/crypto_stream_salsa20.h \
+  /usr/include/sodium/crypto_stream_xsalsa20.h \
+  /usr/include/sodium/crypto_verify_16.h \
+  /usr/include/sodium/crypto_verify_32.h \
+  /usr/include/sodium/crypto_verify_64.h \
+  /usr/include/sodium/randombytes.h \
+  /usr/include/sodium/randombytes_internal_random.h \
+  /usr/include/sodium/randombytes.h \
+  /usr/include/sodium/randombytes_sysrandom.h \
+  /usr/include/sodium/runtime.h \
+  /usr/include/sodium/utils.h \
+  /usr/include/sodium/crypto_box_curve25519xchacha20poly1305.h \
+  /usr/include/sodium/crypto_stream_xchacha20.h \
+  /usr/include/sodium/crypto_core_ed25519.h \
+  /usr/include/sodium/crypto_core_ristretto255.h \
+  /usr/include/sodium/crypto_scalarmult_ed25519.h \
+  /usr/include/sodium/crypto_scalarmult_ristretto255.h \
+  /usr/include/sodium/crypto_secretbox_xchacha20poly1305.h \
+  /usr/include/sodium/crypto_pwhash_scryptsalsa208sha256.h \
+  /usr/include/sodium/crypto_stream_salsa2012.h \
+  /usr/include/sodium/crypto_stream_salsa208.h \
+  /usr/include/sodium/crypto_stream_xchacha20.h
 
+
+/usr/include/sodium/crypto_stream_salsa2012.h:
+
+/usr/include/sodium/crypto_pwhash_scryptsalsa208sha256.h:
+
+/usr/include/sodium/crypto_scalarmult_ristretto255.h:
+
+/usr/include/sodium/crypto_core_ristretto255.h:
+
+/usr/include/sodium/crypto_box_curve25519xchacha20poly1305.h:
+
+/usr/include/sodium/utils.h:
+
+/usr/include/sodium/runtime.h:
+
+/usr/include/sodium/randombytes_sysrandom.h:
+
+/usr/include/sodium/crypto_verify_64.h:
+
+/usr/include/sodium/crypto_verify_16.h:
+
+/usr/include/sodium/crypto_stream_salsa20.h:
+
+/usr/include/sodium/crypto_sign_ed25519.h:
+
+/usr/include/sodium/crypto_shorthash_siphash24.h:
+
+/usr/include/sodium/crypto_shorthash.h:
+
+/usr/include/sodium/crypto_pwhash_argon2id.h:
+
+/usr/include/sodium/crypto_pwhash_argon2i.h:
+
+/usr/include/sodium/crypto_onetimeauth_poly1305.h:
+
+/usr/include/sodium/crypto_generichash_blake2b.h:
+
+/usr/include/sodium/crypto_generichash.h:
+
+/usr/include/sodium/crypto_core_salsa208.h:
+
+/usr/include/sodium/crypto_core_salsa20.h:
+
+/usr/include/sodium/crypto_stream_xsalsa20.h:
+
+/usr/include/sodium/crypto_box.h:
+
+/usr/include/sodium/crypto_stream.h:
+
+/usr/include/sodium/crypto_hash_sha512.h:
+
+/usr/include/sodium/crypto_auth_hmacsha512256.h:
+
+/usr/include/sodium/crypto_auth.h:
+
+/usr/include/sodium/crypto_aead_xchacha20poly1305.h:
+
+/usr/include/sodium/crypto_aead_chacha20poly1305.h:
+
+/usr/include/sodium/core.h:
+
+/usr/include/sodium/export.h:
 
 /usr/include/c++/11/bits/quoted_string.h:
 
@@ -934,6 +1079,10 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
 /usr/include/openssl/sha.h:
 
 ../code/search/trie.hpp:
+
+/usr/include/c++/11/future:
+
+../code/FixedThreadPool.hpp:
 
 /usr/include/boost/algorithm/string/detail/find_format_all.hpp:
 
@@ -974,6 +1123,8 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
 /usr/include/boost/type_traits/has_trivial_copy.hpp:
 
 /usr/include/x86_64-linux-gnu/c++/11/bits/cxxabi_tweaks.h:
+
+/usr/include/sodium/crypto_secretbox.h:
 
 /usr/include/boost/core/demangle.hpp:
 
@@ -1025,6 +1176,8 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
 
 /usr/include/boost/algorithm/string/predicate_facade.hpp:
 
+/usr/include/sodium/crypto_core_hchacha20.h:
+
 /usr/include/boost/algorithm/string/detail/classification.hpp:
 
 /usr/include/boost/algorithm/string/classification.hpp:
@@ -1038,6 +1191,8 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
 /usr/include/boost/type_traits/has_minus.hpp:
 
 /usr/include/boost/type_traits/make_void.hpp:
+
+/usr/include/sodium/crypto_scalarmult_ed25519.h:
 
 /usr/include/boost/type_traits/detail/has_binary_operator.hpp:
 
@@ -1069,6 +1224,8 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
 
 /usr/include/boost/preprocessor/repetition/enum_binary_params.hpp:
 
+/usr/include/sodium/crypto_secretbox_xchacha20poly1305.h:
+
 /usr/include/boost/utility/base_from_member.hpp:
 
 /usr/include/boost/utility.hpp:
@@ -1086,6 +1243,8 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
 /usr/include/boost/range/value_type.hpp:
 
 /usr/include/boost/concept/detail/concept_undef.hpp:
+
+/usr/include/sodium/crypto_hash.h:
 
 /usr/include/boost/preprocessor/seq/detail/is_empty.hpp:
 
@@ -1245,7 +1404,11 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
 
 /usr/include/boost/detail/indirect_traits.hpp:
 
+/usr/include/sodium/crypto_scalarmult.h:
+
 /usr/include/boost/mpl/aux_/preprocessed/gcc/and.hpp:
+
+/usr/include/sodium/crypto_hash_sha256.h:
 
 /usr/include/boost/iterator/detail/facade_iterator_category.hpp:
 
@@ -1254,6 +1417,8 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
 /usr/include/c++/11/cxxabi.h:
 
 /usr/include/boost/mpl/aux_/arity_spec.hpp:
+
+/usr/include/sodium/crypto_kx.h:
 
 /usr/include/boost/mpl/aux_/config/gpu.hpp:
 
@@ -1411,6 +1576,8 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
 
 /usr/include/boost/preprocessor/logical/bool.hpp:
 
+/usr/include/sodium/crypto_box_curve25519xsalsa20poly1305.h:
+
 /usr/include/boost/preprocessor/punctuation/comma_if.hpp:
 
 /usr/include/boost/mpl/aux_/preprocessed/gcc/arg.hpp:
@@ -1436,6 +1603,8 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
 /usr/include/c++/11/iosfwd:
 
 /usr/include/c++/11/initializer_list:
+
+/usr/include/sodium/version.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/error_t.h:
 
@@ -1464,6 +1633,8 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
 /usr/include/c++/11/ios:
 
 /usr/include/c++/11/bits/parse_numbers.h:
+
+/usr/include/sodium/crypto_stream_chacha20.h:
 
 /usr/include/c++/11/limits:
 
@@ -1541,6 +1712,8 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
 
 /usr/include/c++/11/bits/stl_heap.h:
 
+/usr/include/sodium/randombytes.h:
+
 /usr/include/c++/11/bits/std_abs.h:
 
 /usr/include/boost/preprocessor/iteration/detail/iter/forward1.hpp:
@@ -1572,6 +1745,8 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
 /usr/include/mysql/my_list.h:
 
 /usr/include/c++/11/cassert:
+
+/usr/include/sodium/crypto_sign.h:
 
 /usr/include/c++/11/bits/stl_algo.h:
 
@@ -1647,6 +1822,8 @@ CMakeFiles/server.dir/code/server.cpp.o: ../code/server.cpp \
 
 /usr/include/wctype.h:
 
+/usr/include/sodium/crypto_secretbox_xsalsa20poly1305.h:
+
 /usr/include/boost/config/user.hpp:
 
 /usr/include/boost/type_traits/is_default_constructible.hpp:
@@ -1688,6 +1865,8 @@ inc/cppjieba/SegmentTagged.hpp:
 /usr/include/c++/11/bits/vector.tcc:
 
 ../code/search/search_engine.hpp:
+
+/usr/include/c++/11/bits/atomic_futex.h:
 
 /usr/include/c++/11/cstring:
 
@@ -1833,6 +2012,8 @@ inc/cppjieba/Trie.hpp:
 
 /usr/include/limits.h:
 
+/usr/include/sodium/crypto_kdf_blake2b.h:
+
 /usr/include/c++/11/bits/stl_relops.h:
 
 /usr/include/c++/11/bits/regex_compiler.tcc:
@@ -1959,6 +2140,10 @@ inc/cppjieba/PosTagger.hpp:
 
 /usr/include/errno.h:
 
+/usr/include/sodium/crypto_stream_salsa208.h:
+
+/usr/include/sodium/crypto_core_ed25519.h:
+
 /usr/include/c++/11/bits/allocator.h:
 
 /usr/include/c++/11/cmath:
@@ -2002,6 +2187,8 @@ inc/cppjieba/PosTagger.hpp:
 /usr/include/boost/mpl/aux_/adl_barrier.hpp:
 
 /usr/lib/gcc/x86_64-linux-gnu/11/include/stddef.h:
+
+/usr/include/sodium/crypto_core_salsa2012.h:
 
 /usr/include/boost/type_traits/is_complete.hpp:
 
@@ -2063,6 +2250,8 @@ inc/cppjieba/PosTagger.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/local_lim.h:
 
+/usr/include/sodium/crypto_auth_hmacsha256.h:
+
 /usr/lib/gcc/x86_64-linux-gnu/11/include/stdbool.h:
 
 /usr/include/boost/mpl/always.hpp:
@@ -2094,6 +2283,8 @@ inc/cppjieba/PosTagger.hpp:
 /usr/include/x86_64-linux-gnu/bits/xopen_lim.h:
 
 /usr/include/x86_64-linux-gnu/bits/siginfo-consts.h:
+
+/usr/include/sodium/crypto_scalarmult_curve25519.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/stack_t.h:
 
@@ -2156,6 +2347,8 @@ inc/cppjieba/PosTagger.hpp:
 /usr/include/c++/11/bits/atomic_base.h:
 
 /usr/include/c++/11/bits/random.tcc:
+
+/usr/include/sodium/crypto_secretstream_xchacha20poly1305.h:
 
 /usr/include/x86_64-linux-gnu/bits/types.h:
 
@@ -2237,6 +2430,8 @@ inc/cppjieba/PosTagger.hpp:
 
 /usr/include/x86_64-linux-gnu/c++/11/bits/gthr.h:
 
+/usr/include/sodium/crypto_auth_hmacsha512.h:
+
 /usr/include/boost/algorithm/string/detail/find_format_store.hpp:
 
 /usr/include/boost/utility/binary.hpp:
@@ -2277,6 +2472,8 @@ inc/cppjieba/Unicode.hpp:
 
 /usr/include/fcntl.h:
 
+/usr/include/sodium/crypto_onetimeauth.h:
+
 /usr/include/x86_64-linux-gnu/asm/errno.h:
 
 /usr/include/x86_64-linux-gnu/bits/fcntl.h:
@@ -2295,11 +2492,15 @@ inc/cppjieba/Unicode.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/struct_stat.h:
 
+/usr/include/sodium/crypto_kdf.h:
+
 /usr/include/c++/11/bits/stl_set.h:
 
 /usr/include/c++/11/fstream:
 
 /usr/include/boost/config/auto_link.hpp:
+
+/usr/include/sodium/crypto_verify_32.h:
 
 /usr/include/c++/11/istream:
 
@@ -2393,6 +2594,8 @@ inc/cppjieba/Unicode.hpp:
 
 /usr/include/c++/11/queue:
 
+/usr/include/sodium.h:
+
 /usr/include/c++/11/mutex:
 
 /usr/include/boost/preprocessor/tuple/rem.hpp:
@@ -2402,6 +2605,8 @@ inc/cppjieba/Unicode.hpp:
 /usr/include/x86_64-linux-gnu/bits/math-vector.h:
 
 /usr/include/jsoncpp/json/json.h:
+
+/usr/include/sodium/crypto_stream_xchacha20.h:
 
 /usr/include/boost/preprocessor/iterate.hpp:
 
@@ -2429,9 +2634,13 @@ inc/cppjieba/Unicode.hpp:
 
 /usr/include/c++/11/tr1/ell_integral.tcc:
 
+/usr/include/sodium/crypto_core_hsalsa20.h:
+
 /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h:
 
 /usr/include/boost/mpl/bool.hpp:
+
+/usr/include/sodium/randombytes_internal_random.h:
 
 /usr/include/c++/11/tr1/hypergeometric.tcc:
 
@@ -2565,6 +2774,8 @@ inc/cppjieba/QuerySegment.hpp:
 
 /usr/include/jsoncpp/json/reader.h:
 
+/usr/include/sodium/crypto_aead_aes256gcm.h:
+
 /usr/include/boost/preprocessor/seq/seq.hpp:
 
 /usr/include/jsoncpp/json/value.h:
@@ -2572,6 +2783,8 @@ inc/cppjieba/QuerySegment.hpp:
 /usr/include/c++/11/bits/uses_allocator.h:
 
 /usr/include/boost/mpl/aux_/config/workaround.hpp:
+
+../code/assistance.hpp:
 
 /usr/include/mysql/field_types.h:
 
@@ -2593,8 +2806,6 @@ inc/cppjieba/QuerySegment.hpp:
 
 /usr/include/mysql/mysql_time.h:
 
-../code/assistance.hpp:
-
 inc/cppjieba/Jieba.hpp:
 
 /usr/include/x86_64-linux-gnu/gnu/stubs.h:
@@ -2610,6 +2821,8 @@ inc/cppjieba/Jieba.hpp:
 /usr/include/boost/config/detail/posix_features.hpp:
 
 inc/cppjieba/limonp/Logging.hpp:
+
+/usr/include/sodium/crypto_pwhash.h:
 
 /usr/include/c++/11/bitset:
 

@@ -11,11 +11,13 @@
 #include <stdexcept>
 #include <atomic>
 
+static const int thread_count = 4;
+static const int max_queue_size = 10;
 class FixedThreadPool
 {
 public:
     // 获取线程池的唯一实例
-    static FixedThreadPool &get_instance(size_t thread_count, size_t max_queue_size)
+    static FixedThreadPool &get_instance()
     {
         static FixedThreadPool instance(thread_count, max_queue_size);
         return instance;
@@ -29,10 +31,10 @@ public:
         {
             std::unique_lock<std::mutex> lock(mtx_);
             // 阻塞直到队列有空间
-            cond_var.wait(lock, [this]
-                          {
-                              return tasks_.size() < max_queue_size_ || stop_; // 等待直到队列未满或停止标志被设置
-                          });
+            cond_.wait(lock, [this]
+                       {
+                           return tasks_.size() < max_queue_size_ || stop_; // 等待直到队列未满或停止标志被设置
+                       });
             // 如果停止标志被设置，则不再接受任务
             if (stop_)
             {

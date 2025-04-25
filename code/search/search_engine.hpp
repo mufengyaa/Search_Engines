@@ -12,14 +12,21 @@
 
 class Searcher
 {
-    Index *index_;
-
-public:
+    Index *index_ = nullptr;
     Searcher()
     {
         index_ = Index::get_instance();
     }
     ~Searcher() {}
+    Searcher(const Searcher &) = delete;
+    Searcher &operator=(const Searcher &) = delete;
+
+public:
+    static Searcher &instance()
+    {
+        static Searcher instance_;
+        return instance_;
+    }
 
     void search(const std::string &data, std::string *json)
     {
@@ -45,7 +52,7 @@ public:
         for (auto word : words)
         {
             boost::to_lower(word);
-            inverted_zipper zipper;
+            ns_helper::inverted_zipper zipper;
             index_->search_inverted_index(word, zipper);
             for (auto &it : zipper)
             {
