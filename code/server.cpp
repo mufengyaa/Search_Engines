@@ -28,7 +28,7 @@ void handle_register(const httplib::Request &req, httplib::Response &rsp)
     std::string username = json_body["username"].asString();
     std::string password = json_body["password"].asString();
 
-    int ret = auth_manager::instance().register_user(username, password);
+    int ret = auth_manager::instance().regist(username, password);
     if (ret == user_status::EXIST)
     {
         rsp.set_content("账号已存在", "text/plain; charset=utf-8");

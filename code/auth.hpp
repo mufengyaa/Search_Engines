@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <string>
 #include <openssl/sha.h>
+#include <openssl/rand.h>
 #include <random>
 #include <sstream>
 #include <iomanip>
@@ -17,7 +18,7 @@ enum user_status
     FAILED
 };
 
-std::string generateHash(const std::string &password)
+std::string hash_password(const std::string &password)
 {
     unsigned char hash[crypto_pwhash_STRBYTES];
     std::string hashed_password;
@@ -33,8 +34,7 @@ std::string generateHash(const std::string &password)
     hashed_password.assign(reinterpret_cast<char *>(hash), crypto_pwhash_STRBYTES);
     return hashed_password;
 }
-
-bool validatePassword(const std::string &password, const std::string &hashed_password)
+bool check_password(const std::string &password, const std::string &hashed_password)
 {
     // 调用 libsodium 的验证函数来验证密码
     if (crypto_pwhash_str_verify(
@@ -71,12 +71,12 @@ public:
         }
 
         // 生成会话 ID
-        session_id = generate_salt() + "_" + username;
+        session_id = generate_session_id(username);
         sessions_[session_id] = username;
         return user_status::SUCCESS;
     }
 
-    int register_user(const std::string &username, const std::string &password)
+    int regist(const std::string &username, const std::string &password)
     {
         // 防止用户已存在
         if (users_.find(username) != users_.end())
@@ -99,7 +99,10 @@ public:
 
     bool validate_session(const std::string &session_id)
     {
-        return sessions_.find(session_id) != sessions_.end();
+        if (sessions_.find(session_id) != sessions_.end())
+        {
+            return true;
+        }
     }
 
 private:
@@ -111,34 +114,38 @@ private:
     auth_manager(const auth_manager &) = delete;
     auth_manager &operator=(const auth_manager &) = delete;
 
-    std::string generate_salt()
-    {
-        // 随机数生成器
-        std::random_device rd;
-        // 0-255 表示一个char的bit数
-        std::uniform_int_distribution<int> dist(0, 255);
-        std::string salt;
-        // 随机抽取16个bit
-        for (int i = 0; i < 16; ++i)
-        {
-            salt += static_cast<char>(dist(rd));
-        }
-        return salt;
-    }
-
-    std::string hash_password(const std::string &password)
-    {
-        return generateHash(password); // 自动加盐 + 哈希
-    }
-    bool check_password(const std::string &password, const std::string &hashed)
-    {
-        return validatePassword(password, hashed);
-    }
-
     void load_user_data()
     {
         // 从数据库加载用户信息
         user_table::instance().read_user_information(users_);
+    }
+
+    std::string generate_session_id(const std::string &username)
+    {
+        // 获取当前时间戳（纳秒级）
+        auto now = std::chrono::system_clock::now();
+        auto duration = now.time_since_epoch();
+        auto timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+
+        // 随机字节生成器
+        unsigned char random_bytes[16]; // 16字节的随机数
+        if (RAND_bytes(random_bytes, sizeof(random_bytes)) != 1)
+        {
+            std::cerr << "Error generating random bytes for session ID" << std::endl;
+            return "";
+        }
+
+        // 将随机字节转为十六进制字符串
+        std::stringstream hex_stream;
+        for (int i = 0; i < sizeof(random_bytes); ++i)
+        {
+            hex_stream << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(random_bytes[i]);
+        }
+        std::string random_str = hex_stream.str();
+
+        // 生成带时间戳和用户名的 session ID
+        std::string session_id = std::to_string(timestamp) + "_" + random_str + "_" + username;
+        return session_id;
     }
 
     std::unordered_map<std::string, std::string> users_;    // 存储用户名与密码哈希
