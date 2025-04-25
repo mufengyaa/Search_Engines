@@ -8,6 +8,7 @@
 
 #include "assistance.hpp"
 #include "mysql.hpp"
+#include "FixedThreadPool.hpp"
 
 namespace fs = boost::filesystem;
 
@@ -30,34 +31,51 @@ public:
         static Index instance_;
         return &instance_;
     }
-    void Index::init()
+    void init()
     {
+        FixedThreadPool &pool = FixedThreadPool::get_instance(5, 10); // 4个线程，任务队列大小10
+
         // 正排索引构建
         if (!index_table::instance().has_forward_index_data("forward_index_table"))
         {
-            // 通知线程去创建
+            // 使用线程池异步执行正排索引的创建
+            auto task = pool.submit([this]
+                                    {
             create_positive_index();
-            lg(INFO, "create positive_index success");
-            // 通知其他线程去持久化
+            lg(INFO, "create positive_index success"); });
+
+            // 等待任务完成
+            task.get();
         }
         else
         {
-            // 通知线程去读取
+            // 直接从数据库加载
+            auto task = pool.submit([this]
+                                    {
             index_table::instance().load_positive(pos_index_);
-            lg(INFO, "load index from MySQL");
+            lg(INFO, "load index from MySQL"); });
+
+            task.get();
         }
 
         // 倒排索引构建
         if (!index_table::instance().has_forward_index_data("inverted_index_table"))
         {
-            // 通知线程去创建
+            auto task = pool.submit([this]
+                                    {
             create_inverted_index();
-            lg(INFO, "create inverted_index success");
+            lg(INFO, "create inverted_index success"); });
+
+            task.get();
         }
         else
         {
+            auto task = pool.submit([this]
+                                    {
             index_table::instance().load_inverted(inv_index_);
-            lg(INFO, "load index from MySQL");
+            lg(INFO, "load index from MySQL"); });
+
+            task.get();
         }
     }
 
