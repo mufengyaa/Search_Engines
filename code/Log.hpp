@@ -1,58 +1,67 @@
 #pragma once
 
 #include <iostream>
-#include <time.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <ctime>
+#include <cstdarg>
+#include <string>
+#include <mutex>
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdlib.h>
 
 #define INFO 0
 #define DEBUG 1
 #define WARNING 2
 #define ERROR 3
-#define FATAL 4 // 致命的错误
+#define FATAL 4
 
 #define SCREEN 1
 #define ONEFILE 2
 
 #define DEF_NAME "log.txt"
-#define DEF_PATH "/home/mufeng/c++/Search_Engines/log/"
-
+#define DEF_PATH "/home/mufeng/Search_Engines/log/"
 #define SIZE 1024
 
 class Log
 {
 public:
-    Log(int method = SCREEN)
-        : method_(method), path_(DEF_PATH){}
+    // 获取线程安全单例
+    static Log &getInstance(int method = ONEFILE)
+    {
+        static Log instance(method);
+        return instance;
+    }
+
     void operator()(int level, const char *format, ...)
     {
         time_t t = time(nullptr);
         struct tm *ctime = localtime(&t);
 
         char leftbuffer[SIZE];
-        snprintf(leftbuffer, sizeof(leftbuffer), "[%s][%d-%d-%d %d:%d:%d]", levelToString(level).c_str(),
+        snprintf(leftbuffer, sizeof(leftbuffer), "[%s][%04d-%02d-%02d %02d:%02d:%02d]", levelToString(level).c_str(),
                  ctime->tm_year + 1900, ctime->tm_mon + 1, ctime->tm_mday,
                  ctime->tm_hour, ctime->tm_min, ctime->tm_sec);
 
-        va_list s;
-        va_start(s, format);
+        va_list args;
+        va_start(args, format);
         char rightbuffer[SIZE];
-        vsnprintf(rightbuffer, sizeof(rightbuffer), format, s);
-        va_end(s);
+        vsnprintf(rightbuffer, sizeof(rightbuffer), format, args);
+        va_end(args);
 
-        // 格式：默认部分+自定义部分
         char logtxt[SIZE * 2];
         snprintf(logtxt, sizeof(logtxt), "%s %s\n", leftbuffer, rightbuffer);
 
         printLog(logtxt);
     }
-    ~Log(){}
 
 private:
+    Log(int method = SCREEN)
+        : method_(method), path_(DEF_PATH) {}
+
+    ~Log() {}
+
+    Log(const Log &) = delete;
+    Log &operator=(const Log &) = delete;
+
     std::string levelToString(int level)
     {
         switch (level)
@@ -68,11 +77,14 @@ private:
         case FATAL:
             return "FATAL";
         default:
-            return "NONE";
+            return "UNKNOWN";
         }
     }
+
     void printLog(const std::string &logtxt)
     {
+        std::lock_guard<std::mutex> lock(mutex_); // 所有打印操作都加锁
+
         switch (method_)
         {
         case SCREEN:
@@ -85,24 +97,20 @@ private:
             break;
         }
     }
+
     void printOneFile(const std::string &info)
     {
         std::string path = path_ + DEF_NAME;
         int fd = open(path.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0666);
-        if (fd > 0)
+        if (fd >= 0)
         {
             write(fd, info.c_str(), info.size());
             close(fd);
-        }
-        else
-        {
-            return;
         }
     }
 
 private:
     int method_;
     std::string path_;
+    std::mutex mutex_; // 加锁保护写入
 };
-
-Log lg(ONEFILE);

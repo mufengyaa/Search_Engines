@@ -78,7 +78,6 @@ void handle_login(const httplib::Request &req, httplib::Response &rsp)
     }
 }
 
-// 搜索
 // 搜索请求处理
 void handle_search(const httplib::Request &req, httplib::Response &rsp)
 {
@@ -98,24 +97,24 @@ void handle_search(const httplib::Request &req, httplib::Response &rsp)
     {
         std::cout << "用户在搜索：" << word << std::endl;
 
-        // 判断请求是联想 / 正式搜索
-        if (req.has_param("search") && req.get_param_value("search") == "true")
-        {
-            std::string json_string;
+        std::string json_string;
 
-            Searcher::instance().search(word, &json_string);
-            rsp.set_content(json_string, "application/json");
-        }
-        else
-        {
-            suggest(word, rsp); // 提供联想建议
-        }
+        Searcher::instance().search(word, &json_string);
+        rsp.set_content(json_string, "application/json");
     }
     else
     {
         rsp.status = 401; // 未登录
         rsp.set_content("未登录，请先登录", "text/plain; charset=utf-8");
     }
+}
+
+// 联想处理
+void handle_suggest(const httplib::Request &req, httplib::Response &rsp)
+{
+    std::string word = req.get_param_value("word");
+    std::cout << "用户在输入：" << word << std::endl;
+    suggest(word, rsp); // 调用联想逻辑
 }
 
 int main()
@@ -132,8 +131,10 @@ int main()
 
     svr.Post("/register", handle_register);
     svr.Post("/login", handle_login);
-    svr.Get("/s", [](const httplib::Request &req, httplib::Response &rsp)
+    svr.Get("/search", [](const httplib::Request &req, httplib::Response &rsp)
             { handle_search(req, rsp); });
+    svr.Get("/suggest", [](const httplib::Request &req, httplib::Response &rsp)
+            { handle_suggest(req, rsp); });
 
     std::cout << "Starting server on port 8080..." << std::endl;
     svr.listen("0.0.0.0", 8080);

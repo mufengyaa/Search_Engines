@@ -65,6 +65,7 @@ private:
     explicit FixedThreadPool(size_t thread_count, size_t max_queue_size)
         : stop_(false), max_queue_size_(max_queue_size)
     {
+        std::cout << "开始初始化线程池\n";
         // 根据线程数量构建线程
         for (size_t i = 0; i < thread_count; ++i)
         {
@@ -89,6 +90,7 @@ private:
                     task();
                 } });
         }
+        std::cout << "初始化线程池成功\n";
     }
     // 禁止拷贝构造和赋值操作
     FixedThreadPool(const FixedThreadPool &) = delete;

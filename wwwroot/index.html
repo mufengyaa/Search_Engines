@@ -2,21 +2,18 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
-
     <title>Boost 搜索引擎</title>
     <style>
-        /* 去掉网页中的所有的默认内外边距，html的盒子模型 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* 将我们的body内的内容100%和html的呈现吻合 */
         html,
         body {
             height: 100%;
@@ -24,7 +21,6 @@
             background-color: #f4f4f4;
         }
 
-        /* 类选择器.container */
         .container {
             width: 1000px;
             margin: 15px auto;
@@ -34,14 +30,12 @@
             padding: 20px;
         }
 
-        /* 复合选择器，选中container 下的 search */
         .container .search {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
         }
 
-        /* input样式 */
         .container .search input {
             flex: 1;
             height: 50px;
@@ -57,7 +51,6 @@
             outline: none;
         }
 
-        /* button样式 */
         .container .search button {
             width: 150px;
             height: 50px;
@@ -74,7 +67,6 @@
             background-color: #3d5bbf;
         }
 
-        /* 将注册登录按钮放在右上角 */
         .container .auth-buttons {
             position: absolute;
             top: 20px;
@@ -96,7 +88,6 @@
             background-color: #3d5bbf;
         }
 
-        /* 弹出框样式 */
         .modal {
             display: none;
             position: fixed;
@@ -145,9 +136,6 @@
             background-color: #3d5bbf;
         }
 
-
-
-        /* result样式 */
         .container .result {
             margin-top: 20px;
         }
@@ -199,7 +187,6 @@
 
 <body>
     <div class="container">
-        <!-- 右上角的注册和登录按钮 -->
         <div class="auth-buttons">
             <button onclick="showModal('registerModal')">注册</button>
             <button onclick="showModal('loginModal')">登录</button>
@@ -209,8 +196,8 @@
         <div id="registerModal" class="modal">
             <div class="modal-content">
                 <h3>用户注册</h3>
-                <input type="text" id="register-username" placeholder="用户名">
-                <input type="password" id="register-password" placeholder="密码">
+                <input type="text" id="register-username" placeholder="用户名" />
+                <input type="password" id="register-password" placeholder="密码" />
                 <button onclick="register()">注册</button>
             </div>
         </div>
@@ -219,19 +206,21 @@
         <div id="loginModal" class="modal">
             <div class="modal-content">
                 <h3>用户登录</h3>
-                <input type="text" id="login-username" placeholder="用户名">
-                <input type="password" id="login-password" placeholder="密码">
+                <input type="text" id="login-username" placeholder="用户名" />
+                <input type="password" id="login-password" placeholder="密码" />
                 <button onclick="login()">登录</button>
             </div>
         </div>
+
+        <!-- 搜索框和按钮 -->
         <div class="search">
-            <input type="text" placeholder="请输入搜索关键字">
+            <input type="text" placeholder="请输入搜索关键字" oninput="Suggest(this.value)" />
             <button onclick="Search()">搜索一下</button>
         </div>
-        <div class="result">
-            <!-- 动态生成网页内容 -->
-        </div>
+
+        <div class="result"></div>
     </div>
+
     <script>
         function showModal(modalId) {
             document.getElementById(modalId).style.display = 'block';
@@ -242,20 +231,36 @@
         }
 
         window.onclick = function (event) {
-            if (event.target === document.getElementById('registerModal')) {
-                hideModal('registerModal');
+            if (event.target === document.getElementById('registerModal')) hideModal('registerModal');
+            if (event.target === document.getElementById('loginModal')) hideModal('loginModal');
+        };
+
+        function Suggest(query) {
+            let session_id = localStorage.getItem("session_id");
+            if (!query) {
+                $(".container .result").empty();
+                return;
             }
-            if (event.target === document.getElementById('loginModal')) {
-                hideModal('loginModal');
-            }
-        }
-        function Search() {
-            let query = $(".container .search input").val();
-            let session_id = localStorage.getItem("session_id");  // 获取存储的会话 ID
 
             $.ajax({
                 type: "GET",
-                url: "/s?word=" + encodeURIComponent(query) + "&session_id=" + encodeURIComponent(session_id),
+                url: "/suggest?word=" + encodeURIComponent(query) + "&session_id=" + encodeURIComponent(session_id),
+                success: function (data) {
+                    BuildHtml(data);
+                },
+                error: function () {
+                    $(".container .result").empty();
+                }
+            });
+        }
+
+        function Search() {
+            let query = $(".container .search input").val();
+            let session_id = localStorage.getItem("session_id");
+
+            $.ajax({
+                type: "GET",
+                url: "/search?word=" + encodeURIComponent(query) + "&session_id=" + encodeURIComponent(session_id) + "&search=true",
                 success: function (data) {
                     BuildHtml(data);
                 },
@@ -273,7 +278,6 @@
             let resultLabel = $(".container .result");
             resultLabel.empty();
 
-            // 确保 data 是数组并检查长度
             if (!Array.isArray(data) || data.length === 0) {
                 resultLabel.append('<div class="no-results">没有找到结果</div>');
                 return;
@@ -281,30 +285,11 @@
 
             for (let elem of data) {
                 let divLabel = $("<div>", { class: "item" });
-                let aLabel, pLabel, iLabel;
-
-                // 检查是否有标题
                 if (elem.title) {
-                    aLabel = $("<a>", {
-                        text: elem.title,
-                        href: elem.url,
-                        target: "_blank"
-                    });
-                    divLabel.append(aLabel);
+                    divLabel.append($("<a>", { text: elem.title, href: elem.url, target: "_blank" }));
                 }
-
-                // 显示描述
-                pLabel = $("<p>", {
-                    text: elem.desc || "无描述"
-                });
-                divLabel.append(pLabel);
-
-                // 显示链接
-                iLabel = $("<i>", {
-                    text: elem.url
-                });
-                divLabel.append(iLabel);
-
+                divLabel.append($("<p>", { text: elem.desc || "无描述" }));
+                divLabel.append($("<i>", { text: elem.url }));
                 resultLabel.append(divLabel);
             }
         }
@@ -337,11 +322,9 @@
                 contentType: "application/json",
                 data: JSON.stringify({ username, password }),
                 success: function (response) {
-                    // 假设服务器返回的 response 是一个带有会话 ID 的字符串，例如 "登录成功, 会话ID: session12345"
                     const session_id = response.split("会话ID: ")[1];
-
                     if (session_id) {
-                        localStorage.setItem("session_id", session_id); // 存储会话 ID
+                        localStorage.setItem("session_id", session_id);
                         alert("登录成功");
                     } else {
                         alert("登录失败，未能获取会话 ID");

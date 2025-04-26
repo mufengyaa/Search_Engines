@@ -195,13 +195,13 @@ public:
                           ns_helper::escape_string(mysql_, title) + "','" + ns_helper::escape_string(mysql_, content) + "','" + ns_helper::escape_string(mysql_, url) + "')";
         if (mysql_query(mysql_, sql.c_str()) == 0)
             return true;
-        lg(ERROR, "%s", mysql_error(mysql_));
+        Log::getInstance()(ERROR, "%s", mysql_error(mysql_));
         return false;
     }
 
-    void read_source_information(std::vector<ns_helper::doc_info> &sources)
+    void read_source_information(std::vector<ns_helper::docInfo_index> &index)
     {
-        std::string sql = "select title, content, url from source";
+        std::string sql = "select title, content, url,id from source";
         if (mysql_query(mysql_, sql.c_str()) == 0)
         {
             MYSQL_RES *res = mysql_store_result(mysql_);
@@ -210,11 +210,12 @@ public:
                 MYSQL_ROW row;
                 while ((row = mysql_fetch_row(res)))
                 {
-                    ns_helper::doc_info doc;
+                    ns_helper::docInfo_index doc;
                     doc.title_ = row[0] ? row[0] : "";
                     doc.content_ = row[1] ? row[1] : "";
                     doc.url_ = row[2] ? row[2] : "";
-                    sources.emplace_back(std::move(doc));
+                    doc.doc_id_ = std::stoi(row[3]);
+                    index.emplace_back(std::move(doc));
                 }
                 mysql_free_result(res);
             }
@@ -244,7 +245,7 @@ public:
 
     bool has_forward_index_data(const std::string &table)
     {
-        std::string sql = "SELECT COUNT(*) FROM" + table;
+        std::string sql = "SELECT COUNT(*) FROM " + table;
         if (mysql_query(mysql_, sql.c_str()) == 0)
         {
             MYSQL_RES *res = mysql_store_result(mysql_);
@@ -369,12 +370,14 @@ public:
                 std::string escaped_url = ns_helper::escape_string(mysql_, info.url_);
                 std::string sql = "INSERT INTO inverted_index_table (word, doc_id, weight, url) VALUES ('" +
                                   escaped_word + "', " + std::to_string(info.doc_id_) + ", " +
-                                  std::to_string(info.weight_) + ", '" + escaped_url + "')";
+                                  std::to_string(info.weight_) + ", '" + escaped_url + "') " +
+                                  "ON DUPLICATE KEY UPDATE weight=VALUES(weight), url=VALUES(url)";
 
                 if (mysql_query(mysql_, sql.c_str()) != 0)
                 {
-                    std::cerr << "Failed to insert inverted index: " << mysql_error(mysql_) << std::endl;
-                    return false;
+                    std::cerr << "Warning: Failed to insert inverted index: " << mysql_error(mysql_)
+                              << " [SQL]: " << sql << std::endl;
+                    // 不直接 return false，继续插入后面的
                 }
             }
         }

@@ -55,7 +55,7 @@ public:
         std::string path = prefix;
         dfs(node, path, results);
 
-        std::sort(results.begin(), results.end(), [](const auto &a, const auto &b)
+        std::sort(results.begin(), results.end(), [](const std::pair<std::string, int> &a, const std::pair<std::string, int> &b)
                   { return a.second > b.second; });
         return results;
     }

@@ -619,30 +619,14 @@ CMakeFiles/parser.dir/code/parser.cpp.o: ../code/parser.cpp \
   inc/cppjieba/limonp/StringUtil.hpp \
   inc/cppjieba/limonp/Logging.hpp \
   ../code/Log.hpp \
-  /usr/include/x86_64-linux-gnu/sys/stat.h \
-  /usr/include/x86_64-linux-gnu/bits/stat.h \
-  /usr/include/x86_64-linux-gnu/bits/struct_stat.h \
-  /usr/include/x86_64-linux-gnu/bits/statx.h \
-  /usr/include/linux/stat.h \
-  /usr/include/linux/types.h \
-  /usr/include/x86_64-linux-gnu/asm/types.h \
-  /usr/include/asm-generic/types.h \
-  /usr/include/asm-generic/int-ll64.h \
-  /usr/include/x86_64-linux-gnu/asm/bitsperlong.h \
-  /usr/include/asm-generic/bitsperlong.h \
-  /usr/include/linux/posix_types.h \
-  /usr/include/linux/stddef.h \
-  /usr/include/x86_64-linux-gnu/asm/posix_types.h \
-  /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
-  /usr/include/asm-generic/posix_types.h \
-  /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
-  /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
-  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
+  /usr/include/c++/11/cstdarg \
   /usr/include/fcntl.h \
   /usr/include/x86_64-linux-gnu/bits/fcntl.h \
   /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
   /usr/include/linux/falloc.h \
+  /usr/include/x86_64-linux-gnu/bits/stat.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_stat.h \
   ../code/mysql.hpp
 
 
@@ -653,30 +637,6 @@ CMakeFiles/parser.dir/code/parser.cpp.o: ../code/parser.cpp \
 /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h:
 
 /usr/include/fcntl.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_statx.h:
-
-/usr/include/asm-generic/posix_types.h:
-
-/usr/include/x86_64-linux-gnu/asm/posix_types_64.h:
-
-/usr/include/x86_64-linux-gnu/asm/posix_types.h:
-
-/usr/include/linux/stddef.h:
-
-/usr/include/linux/posix_types.h:
-
-/usr/include/asm-generic/bitsperlong.h:
-
-/usr/include/x86_64-linux-gnu/asm/bitsperlong.h:
-
-/usr/include/asm-generic/types.h:
-
-/usr/include/x86_64-linux-gnu/asm/types.h:
-
-/usr/include/linux/types.h:
-
-/usr/include/x86_64-linux-gnu/sys/stat.h:
 
 ../code/Log.hpp:
 
@@ -981,8 +941,6 @@ inc/cppjieba/QuerySegment.hpp:
 /usr/include/c++/11/locale:
 
 /usr/include/boost/mpl/aux_/config/bcc.hpp:
-
-/usr/include/x86_64-linux-gnu/bits/statx.h:
 
 /usr/include/boost/mpl/aux_/preprocessed/gcc/template_arity.hpp:
 
@@ -1320,8 +1278,6 @@ inc/cppjieba/QuerySegment.hpp:
 
 /usr/include/boost/filesystem/path_traits.hpp:
 
-/usr/include/x86_64-linux-gnu/bits/statx-generic.h:
-
 /usr/include/mysql/client_plugin.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
@@ -1489,8 +1445,6 @@ inc/cppjieba/limonp/LocalVector.hpp:
 /usr/include/boost/assert.hpp:
 
 /usr/include/c++/11/backward/auto_ptr.h:
-
-/usr/include/linux/stat.h:
 
 /usr/include/c++/11/pstl/glue_memory_defs.h:
 
@@ -1802,6 +1756,8 @@ inc/cppjieba/limonp/Logging.hpp:
 
 /usr/include/boost/type_traits/is_enum.hpp:
 
+/usr/include/c++/11/cstdarg:
+
 /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:
 
 /usr/include/boost/config/detail/select_compiler_config.hpp:
@@ -1833,8 +1789,6 @@ inc/cppjieba/limonp/Logging.hpp:
 /usr/include/boost/mpl/bind.hpp:
 
 /usr/include/boost/mpl/bind_fwd.hpp:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h:
 
 /usr/include/boost/mpl/aux_/preprocessed/gcc/bind_fwd.hpp:
 
@@ -1913,8 +1867,6 @@ inc/cppjieba/limonp/StringUtil.hpp:
 /usr/include/boost/type_traits/is_array.hpp:
 
 /usr/include/c++/11/bits/stl_stack.h:
-
-/usr/include/asm-generic/int-ll64.h:
 
 /usr/include/boost/filesystem/config.hpp:
 

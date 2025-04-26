@@ -9,8 +9,6 @@
 
 namespace fs = boost::filesystem;
 
-// static int count = 1;
-
 class Parser
 {
     std::vector<ns_helper::doc_info> docs_;
@@ -39,7 +37,7 @@ public:
                         bool ret = source_table::instance().write_source_information(document.title_, document.content_, document.url_);
                         if (!ret)
                         {
-                            lg(ERROR, "file: %s write db failed", path.c_str());
+                            Log::getInstance()(ERROR, "file: %s write db failed", path.c_str());
                         }
                     }
                 }
@@ -49,7 +47,7 @@ public:
         {
             return false;
         }
-        lg(DEBUG, "write success");
+        Log::getInstance()(DEBUG, "write success");
 
         return true;
     }
@@ -97,7 +95,7 @@ void work()
     Parser p;
     if (!p.parser(source_file_path))
     {
-        lg(ERROR, "parser falied");
+        Log::getInstance()(ERROR, "parser falied");
     }
 }
 int main()

@@ -9,6 +9,7 @@
 #include "../mysql.hpp"
 #include "../assistance.hpp"
 #include "../index.hpp"
+#include "trie.hpp"
 
 class Searcher
 {
@@ -20,16 +21,18 @@ class Searcher
     ~Searcher() {}
     Searcher(const Searcher &) = delete;
     Searcher &operator=(const Searcher &) = delete;
+    static Searcher instance_;
 
 public:
     static Searcher &instance()
     {
-        static Searcher instance_;
         return instance_;
     }
 
     void search(const std::string &data, std::string *json)
     {
+        // 记忆
+        Trie::instance().insert(data);
 
         // 进行分词
         std::vector<std::string> words;
@@ -106,7 +109,6 @@ public:
             {
                 title += "[广告]"; // 这里加的空格会被json忽略
             }
-            // title += ",weight=" + std::to_string(it.weight_);  //Debug
             item["title"] = std::move(title);
             item["desc"] = get_desc(doc.content_, it.words_[0]);
             item["url"] = doc.url_;
@@ -129,7 +131,7 @@ private:
                                 { return (std::tolower(x) == std::tolower(y)); });
         if (iter == content.end())
         {
-            lg(ERROR, "No keywords found");
+            Log::getInstance()(ERROR, "No keywords found");
             return "";
         }
         int pos = std::distance(content.begin(), iter);
@@ -147,9 +149,11 @@ private:
 
         if (left >= right)
         {
-            lg(ERROR, "Subscript error found");
+            Log::getInstance()(ERROR, "Subscript error found");
             return "";
         }
         return content.substr(left, right - left);
     }
 };
+
+Searcher Searcher::instance_;

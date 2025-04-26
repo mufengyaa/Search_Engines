@@ -16,6 +16,7 @@ class Index
 {
     std::vector<ns_helper::docInfo_index> pos_index_;                       // 正排索引
     std::unordered_map<std::string, ns_helper::inverted_zipper> inv_index_; // 倒排索引
+    static Index instance_;
 
     Index()
     {
@@ -28,53 +29,66 @@ class Index
 public:
     static Index *get_instance()
     {
-        static Index instance_;
         return &instance_;
     }
     void init()
     {
-        FixedThreadPool &pool = FixedThreadPool::get_instance();
+        bool pos_flag = false, inv_flag = false;
         // 正排索引构建
         if (!index_table::instance().has_forward_index_data("forward_index_table"))
         {
+            pos_flag = true;
+            Log::getInstance()(INFO, "create positive_index");
             // 使用线程池异步执行正排索引的创建
-            auto task = pool.submit([this]
-                                    {
-            create_positive_index();
-            lg(INFO, "create positive_index success"); });
+            auto task = FixedThreadPool::get_instance().submit([this]
+                                                               { create_positive_index(); });
 
             // 等待任务完成
             task.get();
         }
         else
         {
+            Log::getInstance()(INFO, "load index from MySQL");
             // 直接从数据库加载
-            auto task = pool.submit([this]
-                                    {
-            index_table::instance().load_positive(pos_index_);
-            lg(INFO, "load index from MySQL"); });
+            auto task = FixedThreadPool::get_instance().submit([this]
+                                                               { index_table::instance().load_positive(pos_index_); });
 
             task.get();
         }
+        Log::getInstance()(INFO, "正排索引建立完成 %d", pos_index_.size());
 
         // 倒排索引构建
         if (!index_table::instance().has_forward_index_data("inverted_index_table"))
         {
-            auto task = pool.submit([this]
-                                    {
-            create_inverted_index();
-            lg(INFO, "create inverted_index success"); });
+            inv_flag = true;
+            Log::getInstance()(INFO, "create inverted_index");
+            auto task = FixedThreadPool::get_instance().submit([this]
+                                                               { create_inverted_index(); });
 
             task.get();
         }
         else
         {
-            auto task = pool.submit([this]
-                                    {
-            index_table::instance().load_inverted(inv_index_);
-            lg(INFO, "load index from MySQL"); });
+            Log::getInstance()(INFO, "load index from MySQL");
+            auto task = FixedThreadPool::get_instance().submit([this]
+                                                               { index_table::instance().load_inverted(inv_index_); });
 
             task.get();
+        }
+        Log::getInstance()(INFO, "倒排索引建立完成 %d", inv_index_.size());
+
+        // 持久化
+        if (pos_flag)
+        {
+            auto task = FixedThreadPool::get_instance().submit([this]
+                                                               { index_table::instance().save_positive(pos_index_); 
+            Log::getInstance()(INFO, "正排索引持久化完成"); });
+        }
+        if (inv_flag)
+        {
+            auto task = FixedThreadPool::get_instance().submit([this]
+                                                               { index_table::instance().save_inverted(inv_index_);
+            Log::getInstance()(INFO, "倒排索引持久化完成"); });
         }
     }
 
@@ -104,16 +118,7 @@ public:
 private:
     void create_positive_index()
     {
-        std::vector<ns_helper::doc_info> sources;
-        source_table::instance().read_source_information(sources);
-        for (auto &doc : sources)
-        {
-            // 拿到一个文档,进行解析
-            ns_helper::docInfo_index di(std::move(doc));
-            di.doc_id_ = pos_index_.size();
-            // 解析完成后,插入到索引中
-            pos_index_.push_back(std::move(di));
-        }
+        source_table::instance().read_source_information(pos_index_);
     }
     void create_inverted_index() // 以文档为单位
     {
@@ -166,3 +171,5 @@ private:
         }
     }
 };
+
+Index Index::instance_;

@@ -51,7 +51,7 @@ namespace ns_helper
         std::ifstream in(path, std::ios_base::in);
         if (!in.is_open())
         {
-            lg(ERROR, "file: %s open failed", path.c_str());
+            Log::getInstance()(ERROR, "file: %s open failed", path.c_str());
         }
         std::string line;
         while (std::getline(in, line))
@@ -98,7 +98,7 @@ namespace ns_helper
             std::ifstream in(STOP_WORD_PATH);
             if (!in.is_open())
             {
-                lg(ERROR, "file: stop_words.utf8 open failed");
+                Log::getInstance()(ERROR, "file: stop_words.utf8 open failed");
             }
             std::string line;
             while (std::getline(in, line))
@@ -115,7 +115,7 @@ namespace ns_helper
                 if (nullptr == instance_) // 防止多线程下重复创建对象
                 {
                     instance_ = new jieba_util();
-                    lg(DEBUG, "JiebaUtil success");
+                    Log::getInstance()(DEBUG, "JiebaUtil success");
                 }
                 mtx.unlock();
             }

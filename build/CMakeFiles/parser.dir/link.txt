@@ -1,1 +1,1 @@
-/usr/bin/g++ -g CMakeFiles/parser.dir/code/parser.cpp.o -o parser   -L/path/to/libsodium/lib  -Wl,-rpath,/path/to/libsodium/lib -lboost_system -lboost_filesystem -lmysqlclient -lpthread 
+/usr/bin/c++ CMakeFiles/parser.dir/code/parser.cpp.o -o parser   -L/path/to/libsodium/lib  -Wl,-rpath,/path/to/libsodium/lib -lboost_system -lboost_filesystem -lmysqlclient -lpthread 
