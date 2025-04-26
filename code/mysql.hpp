@@ -4,8 +4,11 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <thread>
+#include <future>
 
 #include "assistance.hpp"
+#include "FixedThreadPool.hpp"
 
 class my_mysql
 {
@@ -359,28 +362,78 @@ public:
     }
     bool save_inverted(const std::unordered_map<std::string, ns_helper::inverted_zipper> &index)
     {
-        for (const auto &entry : index)
+        const int MAX_BATCH = 100; // 每100条一批
+
+        size_t num_threads = std::min(index.size(), (size_t)std::thread::hardware_concurrency());
+        size_t index_per_thread = (index.size() + num_threads - 1) / num_threads;
+
+        std::vector<std::future<void>> tasks;
+        auto it = index.begin();
+
+        for (size_t i = 0; i < num_threads && it != index.end(); ++i)
         {
-            const std::string &word = entry.first;
-            const auto &infos = entry.second;
-
-            for (const auto &info : infos)
+            auto start_it = it;
+            size_t count = 0;
+            while (it != index.end() && count < index_per_thread)
             {
-                std::string escaped_word = ns_helper::escape_string(mysql_, word);
-                std::string escaped_url = ns_helper::escape_string(mysql_, info.url_);
-                std::string sql = "INSERT INTO inverted_index_table (word, doc_id, weight, url) VALUES ('" +
-                                  escaped_word + "', " + std::to_string(info.doc_id_) + ", " +
-                                  std::to_string(info.weight_) + ", '" + escaped_url + "') " +
-                                  "ON DUPLICATE KEY UPDATE weight=VALUES(weight), url=VALUES(url)";
+                ++it;
+                ++count;
+            }
+            auto end_it = it;
 
-                if (mysql_query(mysql_, sql.c_str()) != 0)
+            auto task = FixedThreadPool::get_instance().submit([this, start_it, end_it]()
+                                                               {
+            std::string sql_prefix = "INSERT INTO inverted_index_table (word, doc_id, weight, url) VALUES ";
+            std::string sql_values;
+            int batch_size = 0;
+
+            for (auto itr = start_it; itr != end_it; ++itr)
+            {
+                const std::string &word = itr->first;
+                if (word.size() > 255)
                 {
-                    std::cerr << "Warning: Failed to insert inverted index: " << mysql_error(mysql_)
-                              << " [SQL]: " << sql << std::endl;
-                    // 不直接 return false，继续插入后面的
+                    continue; // 跳过太长的单词
+                }
+
+                for (const auto &info : itr->second)
+                {
+                    std::string escaped_word = ns_helper::escape_string(mysql_, word);
+                    std::string escaped_url = ns_helper::escape_string(mysql_, info.url_);
+
+                    sql_values += "('" + escaped_word + "', " + std::to_string(info.doc_id_) + ", " +
+                                std::to_string(info.weight_) + ", '" + escaped_url + "'),";
+                    ++batch_size;
+
+                    if (batch_size >= MAX_BATCH)
+                    {
+                        sql_values.pop_back(); // 去掉最后一个逗号
+                        std::string sql = sql_prefix + sql_values;
+                        if (mysql_query(mysql_, sql.c_str()) != 0)
+                        {
+                            std::cerr << "Warning: Failed to insert inverted index: " << mysql_error(mysql_)
+                                    << " [SQL]: " << sql << std::endl;
+                        }
+                        sql_values.clear();
+                        batch_size = 0;
+                    }
                 }
             }
+
+            if (!sql_values.empty())
+            {
+                sql_values.pop_back();
+                std::string sql = sql_prefix + sql_values;
+                mysql_query(mysql_, sql.c_str());
+            } });
+
+            tasks.push_back(std::move(task));
         }
+
+        for (auto &task : tasks)
+        {
+            task.get();
+        }
+
         return true;
     }
 

@@ -629,4 +629,12 @@ CMakeFiles/parser.dir/code/parser.cpp.o
  /usr/include/x86_64-linux-gnu/bits/stat.h
  /usr/include/x86_64-linux-gnu/bits/struct_stat.h
  /home/mufeng/Search_Engines/code/mysql.hpp
+ /usr/include/c++/11/thread
+ /usr/include/c++/11/bits/std_thread.h
+ /usr/include/c++/11/bits/this_thread_sleep.h
+ /usr/include/c++/11/future
+ /usr/include/c++/11/condition_variable
+ /usr/include/c++/11/atomic
+ /usr/include/c++/11/bits/atomic_futex.h
+ /home/mufeng/Search_Engines/code/FixedThreadPool.hpp
 

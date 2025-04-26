@@ -85,6 +85,11 @@ public:
         std::sort(doc_map.begin(), doc_map.end(),
                   [](const words_info &x, const words_info &y)
                   { return x.weight_ > y.weight_; });
+        // 只取前20条
+        if (doc_map.size() > 20)
+        {
+            doc_map.resize(20);
+        }
 
         // 查询正排索引,并构建json串
         Json::Value root;
