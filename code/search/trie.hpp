@@ -5,6 +5,7 @@
 #include <vector>
 #include <mutex>
 #include <algorithm>
+#include "../index.hpp"
 
 struct TrieNode
 {
@@ -57,6 +58,12 @@ public:
 
         std::sort(results.begin(), results.end(), [](const std::pair<std::string, int> &a, const std::pair<std::string, int> &b)
                   { return a.second > b.second; });
+
+        // 只保留前10个结果
+        if (results.size() > 10)
+        {
+            results.resize(10);
+        }
         return results;
     }
 
@@ -64,9 +71,25 @@ private:
     TrieNode *root;
     std::mutex mutex_;
 
-    Trie() { root = new TrieNode(); }
+    Trie()
+    {
+        root = new TrieNode();
+        init();
+    }
     Trie(const Trie &) = delete;
     Trie &operator=(const Trie &) = delete;
+
+    void init()
+    {
+        auto invertedIndex = Index::get_instance()->get_inv_index();
+        for (const auto &[word, zipper] : invertedIndex)
+        {
+            if (word[0] == 'f' && word.size() < 255) // 判断词的第一个字符
+            {
+                insert(word);
+            }
+        }
+    }
 
     void dfs(TrieNode *node, std::string &path, std::vector<std::pair<std::string, int>> &results)
     {

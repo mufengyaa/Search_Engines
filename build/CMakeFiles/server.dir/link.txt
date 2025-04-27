@@ -1,1 +1,1 @@
-/usr/bin/c++ CMakeFiles/server.dir/code/server.cpp.o -o server   -L/path/to/libsodium/lib  -Wl,-rpath,/path/to/libsodium/lib -lsodium -lboost_system -lboost_filesystem -ljsoncpp -lmysqlclient -lpthread /usr/lib/x86_64-linux-gnu/libcrypto.so 
+/usr/bin/g++ -g CMakeFiles/server.dir/code/server.cpp.o -o server   -L/path/to/libsodium/lib  -Wl,-rpath,/path/to/libsodium/lib -lsodium -lboost_system -lboost_filesystem -ljsoncpp -lmysqlclient -lpthread /usr/lib/x86_64-linux-gnu/libcrypto.so 

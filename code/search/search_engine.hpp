@@ -32,7 +32,7 @@ public:
     void search(const std::string &data, std::string *json)
     {
         // 记忆
-        Trie::instance().insert(data);
+        Trie::instance().insert(data, 2);
 
         // 进行分词
         std::vector<std::string> words;

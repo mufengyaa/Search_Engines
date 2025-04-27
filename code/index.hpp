@@ -62,12 +62,17 @@ public:
         }
         return true;
     }
+    const std::unordered_map<std::string, ns_helper::inverted_zipper> &get_inv_index()
+    {
+        return inv_index_;
+    }
 
 private:
     void create_positive_index(bool &pos_flag)
     {
         if (!index_table::instance().has_forward_index_data("forward_index_table"))
         {
+            pos_flag = true;
             Log::getInstance()(INFO, "create positive_index");
             auto task = FixedThreadPool::get_instance().submit([this]
                                                                { source_table::instance().read_source_information(pos_index_); });
@@ -87,50 +92,18 @@ private:
     {
         if (!index_table::instance().has_forward_index_data("inverted_index_table"))
         {
+            inv_flag = true;
             Log::getInstance()(INFO, "create inverted_index");
 
-            // 拷贝正排索引，避免线程同时读vector内部
-            std::vector<ns_helper::docInfo_index> pos_vec = pos_index_;
-
-            size_t num_threads = std::min<size_t>(std::thread::hardware_concurrency(), 8); // 最多8个线程
-            size_t batch_size = (pos_vec.size() + num_threads - 1) / num_threads;
-
-            std::mutex inv_mutex;
-            std::vector<std::future<void>> tasks;
-
-            for (size_t t = 0; t < num_threads; ++t)
+            // 逐个处理正排索引，生成倒排索引
+            for (size_t i = 0; i < pos_index_.size(); ++i)
             {
-                size_t start = t * batch_size;
-                size_t end = std::min(start + batch_size, pos_vec.size());
-
-                if (start >= end)
-                    break;
-
-                tasks.push_back(FixedThreadPool::get_instance().submit([this, &pos_vec, start, end, &inv_mutex]()
-                                                                       {
-                std::unordered_map<std::string, std::vector<ns_helper::word_info>> local_inv;
-
-                for (size_t i = start; i < end; ++i)
-                {
-                    help_create_inverted_index(pos_vec[i], local_inv);
-                }
-
-                // 合并局部结果
-                std::lock_guard<std::mutex> lock(inv_mutex);
-                for (auto &pair : local_inv)
-                {
-                    inv_index_[pair.first].insert(inv_index_[pair.first].end(), pair.second.begin(), pair.second.end());
-                } }));
-            }
-
-            for (auto &task : tasks)
-            {
-                task.get(); // 等待全部线程完成
+                help_create_inverted_index(pos_index_[i]); // 处理每一个文档
             }
         }
         else
         {
-            Log::getInstance()(INFO, "load index from MySQL");
+            Log::getInstance()(INFO, "load inverted_index from MySQL");
 
             auto task = FixedThreadPool::get_instance().submit([this]
                                                                { index_table::instance().load_inverted(inv_index_); });
@@ -140,7 +113,7 @@ private:
         Log::getInstance()(INFO, "倒排索引建立完成 %lu", inv_index_.size());
     }
 
-    void help_create_inverted_index(const ns_helper::docInfo_index &doc, std::unordered_map<std::string, std::vector<ns_helper::word_info>> &local_inv)
+    void help_create_inverted_index(const ns_helper::docInfo_index &doc)
     {
         struct word_cnt
         {
@@ -180,7 +153,7 @@ private:
             t.url_ = doc.url_;
             t.word_ = it.first;
             t.weight_ = (it.second).title_cnt_ * title_count + (it.second).content_cnt_ * content_count;
-            local_inv[t.word_].push_back(t); // 插入的是小写单词
+            inv_index_[t.word_].push_back(t); // 插入的是小写单词
         }
     }
     void Persistence(bool pos_flag, bool inv_flag)

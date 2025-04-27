@@ -383,48 +383,86 @@ public:
 
             auto task = FixedThreadPool::get_instance().submit([this, start_it, end_it]()
                                                                {
-            std::string sql_prefix = "INSERT INTO inverted_index_table (word, doc_id, weight, url) VALUES ";
-            std::string sql_values;
-            int batch_size = 0;
-
-            for (auto itr = start_it; itr != end_it; ++itr)
-            {
-                const std::string &word = itr->first;
-                if (word.size() > 255)
+                MYSQL *mysql_thread = mysql_init(NULL);
+                if (mysql_real_connect(mysql_thread, "101.126.142.54", "mufeng", "599348181", "conn", 3306, nullptr, 0) == NULL)
                 {
-                    continue; // 跳过太长的单词
+                    std::cerr << "MySQL connection failed: " << mysql_error(mysql_thread) << std::endl;
+                    return;
                 }
-
-                for (const auto &info : itr->second)
+    
+                if (mysql_query(mysql_thread, "START TRANSACTION") != 0)
                 {
-                    std::string escaped_word = ns_helper::escape_string(mysql_, word);
-                    std::string escaped_url = ns_helper::escape_string(mysql_, info.url_);
-
-                    sql_values += "('" + escaped_word + "', " + std::to_string(info.doc_id_) + ", " +
-                                std::to_string(info.weight_) + ", '" + escaped_url + "'),";
-                    ++batch_size;
-
-                    if (batch_size >= MAX_BATCH)
+                    std::cerr << "Failed to start transaction: " << mysql_error(mysql_thread) << std::endl;
+                    mysql_close(mysql_thread);
+                    return;
+                }
+    
+                std::ostringstream sql_stream;
+                sql_stream << "INSERT INTO inverted_index_table (word, doc_id, weight, url) VALUES ";
+                int batch_size = 0;
+    
+                for (auto itr = start_it; itr != end_it; ++itr)
+                {
+                    const std::string &word = itr->first;
+                    if (word.size() > 255)
                     {
-                        sql_values.pop_back(); // 去掉最后一个逗号
-                        std::string sql = sql_prefix + sql_values;
-                        if (mysql_query(mysql_, sql.c_str()) != 0)
+                        continue; // Skip too long words
+                    }
+    
+                    for (const auto &info : itr->second)
+                    {
+                        std::string escaped_word = ns_helper::escape_string(mysql_thread, word);
+                        std::string escaped_url = ns_helper::escape_string(mysql_thread, info.url_);
+    
+                        sql_stream << "('" << escaped_word << "', "
+                                   << info.doc_id_ << ", "
+                                   << info.weight_ << ", '"
+                                   << escaped_url << "'),";
+                        ++batch_size;
+    
+                        if (batch_size >= MAX_BATCH)
                         {
-                            std::cerr << "Warning: Failed to insert inverted index: " << mysql_error(mysql_)
-                                    << " [SQL]: " << sql << std::endl;
+                            sql_stream.seekp(-1, std::ios_base::end); // Remove last comma
+                            std::string sql = sql_stream.str();
+                            if (mysql_query(mysql_thread, sql.c_str()) != 0)
+                            {
+                                std::cerr << "Failed to insert inverted index: " << mysql_error(mysql_thread)
+                                          << " [SQL]: " << sql << std::endl;
+                                mysql_query(mysql_thread, "ROLLBACK");
+                                mysql_close(mysql_thread);
+                                return;
+                            }
+                            sql_stream.str("");
+                            sql_stream.clear();
+                            batch_size = 0;
+    
+                            // 重新开始一条新的 INSERT 语句
+                            sql_stream << "INSERT INTO inverted_index_table (word, doc_id, weight, url) VALUES ";
                         }
-                        sql_values.clear();
-                        batch_size = 0;
                     }
                 }
-            }
-
-            if (!sql_values.empty())
-            {
-                sql_values.pop_back();
-                std::string sql = sql_prefix + sql_values;
-                mysql_query(mysql_, sql.c_str());
-            } });
+    
+                // 处理剩余的未提交部分
+                if (batch_size > 0)
+                {
+                    sql_stream.seekp(-1, std::ios_base::end); // Remove last comma
+                    std::string sql = sql_stream.str();
+                    if (mysql_query(mysql_thread, sql.c_str()) != 0)
+                    {
+                        std::cerr << "Failed to insert inverted index: " << mysql_error(mysql_thread)
+                                  << " [SQL]: " << sql << std::endl;
+                        mysql_query(mysql_thread, "ROLLBACK");
+                        mysql_close(mysql_thread);
+                        return;
+                    }
+                }
+    
+                if (mysql_query(mysql_thread, "COMMIT") != 0)
+                {
+                    std::cerr << "Failed to commit transaction: " << mysql_error(mysql_thread) << std::endl;
+                }
+    
+                mysql_close(mysql_thread); });
 
             tasks.push_back(std::move(task));
         }
