@@ -73,44 +73,62 @@ private:
         if (!index_table::instance().has_forward_index_data("forward_index_table"))
         {
             pos_flag = true;
-            Log::getInstance()(INFO, "create positive_index");
+            Log::getInstance()(INFO, "正排索引: 创建中...");
+            auto start_time = std::chrono::steady_clock::now();
+
             auto task = FixedThreadPool::get_instance().submit([this]
                                                                { source_table::instance().read_source_information(pos_index_); });
-
             task.get();
+
+            auto end_time = std::chrono::steady_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+            Log::getInstance()(INFO, "正排索引: 自建完成 %lu 条，用时 %ld ms", pos_index_.size(), duration);
         }
         else
         {
-            Log::getInstance()(INFO, "load positive_index from MySQL");
+            Log::getInstance()(INFO, "正排索引: 正在从数据库加载...");
+            auto start_time = std::chrono::steady_clock::now();
+
             auto task = FixedThreadPool::get_instance().submit([this]
                                                                { index_table::instance().load_positive(pos_index_); });
             task.get();
+
+            auto end_time = std::chrono::steady_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+            Log::getInstance()(INFO, "正排索引: 从数据库加载完成 %lu 条，用时 %ld ms", pos_index_.size(), duration);
         }
-        Log::getInstance()(INFO, "正排索引建立完成 %d", pos_index_.size());
     }
+
     void create_inverted_index(bool &inv_flag)
     {
         if (!index_table::instance().has_forward_index_data("inverted_index_table"))
         {
             inv_flag = true;
-            Log::getInstance()(INFO, "create inverted_index");
+            Log::getInstance()(INFO, "倒排索引: 创建中...");
+            auto start_time = std::chrono::steady_clock::now();
 
-            // 逐个处理正排索引，生成倒排索引
             for (size_t i = 0; i < pos_index_.size(); ++i)
             {
-                help_create_inverted_index(pos_index_[i]); // 处理每一个文档
+                help_create_inverted_index(pos_index_[i]);
             }
+
+            auto end_time = std::chrono::steady_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+            Log::getInstance()(INFO, "倒排索引: 自建完成 %lu 项，用时 %ld ms", inv_index_.size(), duration);
         }
         else
         {
-            Log::getInstance()(INFO, "load inverted_index from MySQL");
+            Log::getInstance()(INFO, "倒排索引: 正在从数据库加载...");
+            auto start_time = std::chrono::steady_clock::now();
 
             auto task = FixedThreadPool::get_instance().submit([this]
                                                                { index_table::instance().load_inverted(inv_index_); });
             task.get();
-        }
 
-        Log::getInstance()(INFO, "倒排索引建立完成 %lu", inv_index_.size());
+            auto end_time = std::chrono::steady_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+            Log::getInstance()(INFO, "倒排索引: 从数据库加载完成 %lu 项，用时 %ld ms", inv_index_.size(), duration);
+        }
     }
 
     void help_create_inverted_index(const ns_helper::docInfo_index &doc)
@@ -160,15 +178,24 @@ private:
     {
         if (pos_flag)
         {
-            auto task = FixedThreadPool::get_instance().submit([this]
-                                                               { index_table::instance().save_positive(pos_index_); 
-            Log::getInstance()(INFO, "正排索引持久化完成"); });
+            auto start_time = std::chrono::steady_clock::now();
+            auto task = FixedThreadPool::get_instance().submit([this, start_time]
+                                                               {
+            index_table::instance().save_positive(pos_index_);
+            auto end_time = std::chrono::steady_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+            Log::getInstance()(INFO, "正排索引: 持久化完成，用时 %ld ms", duration); });
         }
+
         if (inv_flag)
         {
-            auto task = FixedThreadPool::get_instance().submit([this]
-                                                               { index_table::instance().save_inverted(inv_index_);
-            Log::getInstance()(INFO, "倒排索引持久化完成"); });
+            auto start_time = std::chrono::steady_clock::now();
+            auto task = FixedThreadPool::get_instance().submit([this, start_time]
+                                                               {
+            index_table::instance().save_inverted(inv_index_);
+            auto end_time = std::chrono::steady_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+            Log::getInstance()(INFO, "倒排索引: 持久化完成，用时 %ld ms", duration); });
         }
     }
 };

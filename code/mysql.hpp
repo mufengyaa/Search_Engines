@@ -364,16 +364,18 @@ public:
     {
         const int MAX_BATCH = 100; // 每100条一批
 
+        // 根据 CPU 核数，自动决定开多少个线程,每个线程负责一部分索引数据
         size_t num_threads = std::min(index.size(), (size_t)std::thread::hardware_concurrency());
         size_t index_per_thread = (index.size() + num_threads - 1) / num_threads;
 
         std::vector<std::future<void>> tasks;
         auto it = index.begin();
-
         for (size_t i = 0; i < num_threads && it != index.end(); ++i)
         {
+            // 确定头尾迭代器
             auto start_it = it;
             size_t count = 0;
+            // 移动迭代器
             while (it != index.end() && count < index_per_thread)
             {
                 ++it;
@@ -383,6 +385,7 @@ public:
 
             auto task = FixedThreadPool::get_instance().submit([this, start_it, end_it]()
                                                                {
+                // 多线程之间不能共享同一个 MYSQL* 指针，否则会出现数据混乱，甚至程序崩溃
                 MYSQL *mysql_thread = mysql_init(NULL);
                 if (mysql_real_connect(mysql_thread, "101.126.142.54", "mufeng", "599348181", "conn", 3306, nullptr, 0) == NULL)
                 {
@@ -390,6 +393,7 @@ public:
                     return;
                 }
     
+                //开启事务
                 if (mysql_query(mysql_thread, "START TRANSACTION") != 0)
                 {
                     std::cerr << "Failed to start transaction: " << mysql_error(mysql_thread) << std::endl;
@@ -398,64 +402,71 @@ public:
                 }
     
                 std::ostringstream sql_stream;
-                sql_stream << "INSERT INTO inverted_index_table (word, doc_id, weight, url) VALUES ";
                 int batch_size = 0;
     
                 for (auto itr = start_it; itr != end_it; ++itr)
                 {
                     const std::string &word = itr->first;
                     if (word.size() > 255)
-                    {
-                        continue; // Skip too long words
-                    }
-    
+                        continue; // 跳过过长词条
+                
+                    //遍历倒排拉链
                     for (const auto &info : itr->second)
                     {
+                        if (batch_size == 0)
+                        {
+                            // 每次新 batch 开头都要加 INSERT INTO
+                            sql_stream << "INSERT INTO inverted_index_table (word, doc_id, weight, url) VALUES ";
+                        }
+                
                         std::string escaped_word = ns_helper::escape_string(mysql_thread, word);
                         std::string escaped_url = ns_helper::escape_string(mysql_thread, info.url_);
-    
+                
                         sql_stream << "('" << escaped_word << "', "
                                    << info.doc_id_ << ", "
                                    << info.weight_ << ", '"
                                    << escaped_url << "'),";
+                
                         ++batch_size;
-    
+                
                         if (batch_size >= MAX_BATCH)
                         {
-                            sql_stream.seekp(-1, std::ios_base::end); // Remove last comma
+                            // 到了100条，执行一次
+                            sql_stream.seekp(-1, std::ios_base::end); // 删除最后一个逗号
                             std::string sql = sql_stream.str();
+                            std::cout<<"\nsql:\n"<<sql<<std::endl;
                             if (mysql_query(mysql_thread, sql.c_str()) != 0)
                             {
-                                std::cerr << "Failed to insert inverted index: " << mysql_error(mysql_thread)
+                                std::cerr << "Failed to insert inverted index batch: " << mysql_error(mysql_thread)
                                           << " [SQL]: " << sql << std::endl;
                                 mysql_query(mysql_thread, "ROLLBACK");
                                 mysql_close(mysql_thread);
                                 return;
                             }
+                
+                            // 执行后清空
                             sql_stream.str("");
                             sql_stream.clear();
                             batch_size = 0;
-    
-                            // 重新开始一条新的 INSERT 语句
-                            sql_stream << "INSERT INTO inverted_index_table (word, doc_id, weight, url) VALUES ";
                         }
                     }
                 }
-    
-                // 处理剩余的未提交部分
+                
+                // 插入最后一批不足100条的
                 if (batch_size > 0)
                 {
-                    sql_stream.seekp(-1, std::ios_base::end); // Remove last comma
+                    sql_stream.seekp(-1, std::ios_base::end); // 删除最后一个逗号
                     std::string sql = sql_stream.str();
                     if (mysql_query(mysql_thread, sql.c_str()) != 0)
                     {
-                        std::cerr << "Failed to insert inverted index: " << mysql_error(mysql_thread)
+                        std::cerr << "Failed to insert last inverted index batch: " << mysql_error(mysql_thread)
                                   << " [SQL]: " << sql << std::endl;
                         mysql_query(mysql_thread, "ROLLBACK");
                         mysql_close(mysql_thread);
                         return;
                     }
                 }
+                
     
                 if (mysql_query(mysql_thread, "COMMIT") != 0)
                 {

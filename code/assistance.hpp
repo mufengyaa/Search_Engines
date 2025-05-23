@@ -46,6 +46,12 @@ namespace ns_helper
     };
     using inverted_zipper = std::vector<word_info>;
 
+    // 支持的任务类型
+    inline constexpr const char *TASK_TYPE_BUILD_INDEX = "build_index";
+    inline constexpr const char *TASK_TYPE_PERSIST_INDEX = "persist_index";
+    inline constexpr const char *TASK_TYPE_SEARCH = "search";
+    inline constexpr const char *TASK_TYPE_AUTOCOMPLETE = "autocomplete";
+
     void read_file(const std::string &path, std::string &data)
     {
         std::ifstream in(path, std::ios_base::in);
